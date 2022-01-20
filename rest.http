@@ -1,0 +1,18 @@
+### ROL
+
+GET http://localhost:3000/rol/all
+
+###
+
+POST http://localhost:3000/rol/crear
+content-type: application/json
+
+{
+    "r_rol": "Cliente"
+}
+
+### USUARIOS
+
+GET http://localhost:3000/users/all
+
+###
