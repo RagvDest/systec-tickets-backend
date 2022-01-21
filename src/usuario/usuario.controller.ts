@@ -10,7 +10,7 @@ import { RolService } from 'src/rol/rol.service';
 import { UsuarioUpdateDto } from './dto/usuario.update.dto';
 import { PersonaUpdateDto } from 'src/persona/dto/persona.update.dto';
 
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const saltRounds = 10;
 
 @Controller('users')
@@ -20,6 +20,17 @@ export class UsuarioController{
         private readonly _personaServices:PersonaService,
         private readonly _rolServices:RolService
     ){}
+
+    @Get('logout')
+    logout(
+        @Res() res,
+        @Session() session
+    ){
+        console.log("Hola");
+      session.usuarioNombre=undefined;
+      session.destroy();
+      res.status(200).send({mensaje:"Ha cerrado su sesión"});
+  }
 
 
     @Post('pass')
@@ -47,12 +58,14 @@ export class UsuarioController{
     @Post('logIn')
     async logInUserPass(
         @Res() res,
-        @Body('pass') pass,
+        @Body('password') pass,
         @Body('username') username,
         @Session() session
     ){
         try {
-            const usuario = await this._usuarioServices.find({nombre:username});
+            console.log(username);
+            console.log(pass);
+            const usuario = await this._usuarioServices.find({u_usuario:username});
             if(usuario.length<=0){
                 res.status(400).send({mensaje:"Error al iniciar sesión. Revise su usuario y contraseña"});
                 throw new Error("Error al iniciar sesión. Revise su usuario y contraseña");
@@ -62,7 +75,7 @@ export class UsuarioController{
                 session.usuario = usuario[0];
                 let rol = await this._rolServices.findByID(usuario[0].rol_id);
                 session.rol = rol;
-                res.send({mensaje:"Bienvenido!"});
+                res.send({mensaje:"Bienvenido!", usuario:session.usuario.u_usuario,rol:session.rol.r_rol});
             }
             else{
                 res.status(400).send({mensaje:"Error al iniciar sesión. Revise su usuario y contraseña"});
@@ -72,6 +85,7 @@ export class UsuarioController{
             
         } catch (error) {
             console.error(error);
+            res.send({error});
         }
     }
 
