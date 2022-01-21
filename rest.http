@@ -11,8 +11,83 @@ content-type: application/json
     "r_rol": "Cliente"
 }
 
-### USUARIOS
+### ------------ Persona -----------------
+## CREAR
+POST http://localhost:3000/persona/crear
+content-type: application/json
 
-GET http://localhost:3000/users/all
+{
+    "p_nombres": "Tito Jose",
+    "p_apellidos":"Gorozabel Villavicencio",
+    "p_cedula":"1305412321"
+}
+### BUSCAR
 
-###
+GET http://localhost:3000/persona/61e8f9c043a2dab293e11c88
+
+### ELIMINAR
+
+DELETE http://localhost:3000/persona/del/61e901bd483ae25931c1b504
+
+### ACTUALIZAR
+
+PATCH  http://localhost:3000/persona/update/62e8f0ae0bdae22eb6ce19a7
+content-type: application/json
+
+{
+    "p_nombres": "Renny Andrees",
+    "p_apellidos":"Gorozabel Villavicencio"
+}
+
+### --------------USUARIOS---------
+## CREAR
+POST http://localhost:3000/users/crear
+content-type: application/json
+
+{
+    "persona":
+    {
+        "p_nombres": "Tito Jose",
+        "p_apellidos":"Gorozabel Villavicencio",
+        "p_cedula":"1305412321"
+    },
+    "usuario":
+    {
+        "u_usuario":"TitoGV",
+        "u_mail":"titojose@hotmail.com",
+        "u_activo":true,
+        "u_hash":"",
+        "u_password":"",
+        "rol_id":"61e7dc21aed590273949963d"
+    }
+}
+### ACTUALIZAR
+
+PATCH  http://localhost:3000/users/update/61e902d8996cc57b8dca918d
+content-type: application/json
+
+{
+    "persona":
+    {
+        "p_nombres": "Tito Joses",
+        "p_apellidos":"Gorozabel Villavicencio",
+        "p_cedula":"1305412321"
+    },
+    "usuario":
+    {
+        "u_usuario":"TitoGV",
+        "u_mail":"titojoses@hotmail.com",
+        "u_activo":true,
+        "u_hash":"",
+        "u_password":"",
+        "rol_id":"61e7dc21aed590273949963d"
+    }
+}
+###  CONSULTAR INFO
+
+GET http://localhost:3000/users/61e902d8996cc57b8dca918d
+
+###  LISTAR
+
+GET http://localhost:3000/users/all?user=TitoJG
+

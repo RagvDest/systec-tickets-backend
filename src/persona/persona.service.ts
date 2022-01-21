@@ -2,14 +2,13 @@ import { Model } from 'mongoose';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Persona, PersonaDocument } from './persona.entity';
-import { PersonaCreateDto } from './dto/persona.create.dto';
 
 @Injectable()
 export class PersonaService{
-    constructor(@InjectModel(Persona.name) private personaModel:Model<PersonaDocument>){}
+    constructor(@InjectModel(Persona.name) private personaModel:Model<Persona>){}
 
-    async create(personaCreateDto:PersonaCreateDto):Promise<Persona>{
-        const personaCreada = new this.personaModel(PersonaCreateDto);
+    async crear(persona:Persona):Promise<Persona>{
+        const personaCreada = new this.personaModel(persona);
         return personaCreada.save();
     };
 
@@ -17,8 +16,16 @@ export class PersonaService{
         return this.personaModel.find().exec();
     };
 
+    async deletePerson(id:string){
+        return this.personaModel.findByIdAndDelete(id).exec();
+    }
+
     async findByID(persona_id?):Promise<Persona>{
         return this.personaModel.findById(persona_id).exec();
+    }
+
+    async updateByID(persona_id?,query?):Promise<Persona>{
+        return this.personaModel.findByIdAndUpdate(persona_id,query,{upsert:false});
     }
 
 }

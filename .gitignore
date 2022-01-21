@@ -2,6 +2,9 @@
 /dist
 /node_modules
 
+# Sessions
+/sessions
+
 # Logs
 logs
 *.log

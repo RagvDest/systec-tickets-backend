@@ -14,7 +14,19 @@ export class UsuarioService{
         return usuarioCreado.save();
     }
 
-    async findAll():Promise<Usuario[]>{
-        return this.usuarioModel.find().exec();
+    async find(param?):Promise<Usuario[]>{
+        return this.usuarioModel.find(param).exec();
+    }
+
+    async deleteUser(id:string){
+        return this.usuarioModel.findByIdAndDelete(id).exec();
+    }
+
+    async findByID(usuario_id?):Promise<Usuario>{
+        return this.usuarioModel.findById(usuario_id).exec();
+    }
+
+    async updateByID(usuario_id?,query?):Promise<Usuario>{
+        return this.usuarioModel.findByIdAndUpdate(usuario_id,query,{upsert:false});
     }
 }
