@@ -7,8 +7,8 @@ import { Rol, RolDocument } from './rol.entity';
 export class RolService{
     constructor(@InjectModel(Rol.name) private rolModel:Model<Rol>){}
 
-    async findAll():Promise<Rol[]>{
-        return this.rolModel.find().exec();
+    async findAll(param?):Promise<Rol[]>{
+        return this.rolModel.find(param).exec();
     }
     async findByID(id?):Promise<Rol>{
         return this.rolModel.findById(id).exec();

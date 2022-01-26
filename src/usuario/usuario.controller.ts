@@ -92,17 +92,21 @@ export class UsuarioController{
     @Get('all')
     async buscarUsuarios(
         @Res() res,
-        @Query('mail') mail?,
-        @Query('user') user?
+        @Query('filtro') filtro?,
+        @Query('input') input?,
+        @Query('op') op?
     ){
-        console.log(user);
-        let param = {u_usuario: user}
+        let param;
+        if(filtro=='Username')
+            param = {u_usuario: { $regex: '.*' + input + '.*' }}
+        else if (filtro=='Correo')
+            param = {u_mail: { $regex: '.*' + input + '.*' }}
+        else if(filtro == 'Nombres')
+            param = {p_nombres:{ $regex: '.*' + input + '.*' }}
+        else if(filtro == 'Cédula')
+            param = {p_cedula:{ $regex: '.*' + input + '.*' }}
         try {
-            const results =[];
-            const usuarios = await this._usuarioServices.find(param);
-            for(var i=0;i<usuarios.length;i++)
-                results.push(await this.llenarDatos(usuarios[i]));
-            
+            const results = await this.llenarDatos(op,param);    
             res.send({results:results});
         } catch (error) {
             console.error(error);
@@ -147,14 +151,15 @@ export class UsuarioController{
     async crearUsuario(
         @Res() res,
         @Body('usuario') usuario:Usuario,
-        @Body('persona') persona:Persona
+        @Body('persona') persona:Persona,
+        @Body('rol') rol:string
     ){
         var id_persona;
         try {
             id_persona = await this.crearPersona(res,persona);
             usuario.persona_id = id_persona;
 
-            const rol_id = await this._rolServices.findByID(usuario.rol_id);
+            const rol_id = await this._rolServices.findByID(rol);
             usuario.rol_id = rol_id;
             
             const user = new UsuarioCreateDto();
@@ -169,8 +174,9 @@ export class UsuarioController{
                 console.error(errores);
                 res.send({errores:errores});
             }else{
+                usuario.u_activo = true;
                 const usuarioCreado = await this._usuarioServices.create(usuario);
-                res.send({usuarioCreado:usuarioCreado})
+                res.send({ok:true,usuarioCreado:usuarioCreado})
             }
         } catch (error) {
             console.error(error);
@@ -269,16 +275,45 @@ export class UsuarioController{
     }
 
     async llenarDatos(
-        user:Usuario
+        op:string,
+        param?
     ){
-        const completo={
+        const results =[];
+        let usuarios, personas, usuario, persona;
+
+        let completo={
             usuario:{},
             persona:{}
         };
-        let persona = await this._personaServices.findByID(user.persona_id);
-        completo.usuario = user;
-        completo.persona = persona;
-        return completo;
+
+        if(op==='u'){
+            usuarios = await this._usuarioServices.find(param);
+            for(var i=0;i<usuarios.length;i++){
+                completo={
+                    usuario:{},
+                    persona:{}
+                };
+                persona = await this._personaServices.findByID(usuarios[i].persona_id);
+                completo.usuario = usuarios[i];
+                completo.persona = persona;
+                results.push(completo);
+            }
+        }else if(op==='p' || param==null){
+            personas = await this._personaServices.findAll(param);
+            for(var i=0;i<personas.length;i++){
+                completo={
+                    usuario:{},
+                    persona:{}
+                };
+                usuario = await this._usuarioServices.findByPersonaID({persona_id:personas[i]._id});
+                completo.usuario = usuario;
+                completo.persona = personas[i];
+                results.push(completo);
+            }
+        }
+        console.log('Results: '+JSON.stringify(results));
+
+        return results;
     }
 
 }

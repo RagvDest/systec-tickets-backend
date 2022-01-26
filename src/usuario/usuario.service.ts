@@ -29,4 +29,9 @@ export class UsuarioService{
     async updateByID(usuario_id?,query?):Promise<Usuario>{
         return this.usuarioModel.findByIdAndUpdate(usuario_id,query,{upsert:false});
     }
+
+    async findByPersonaID(param?):Promise<Usuario>{
+        return this.usuarioModel.findOne(param).exec();
+
+    }
 }

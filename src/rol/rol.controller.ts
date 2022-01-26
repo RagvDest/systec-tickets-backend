@@ -20,7 +20,10 @@ export class RolController {
   async findAll(
       @Res() res?
   ) {
-      const rols = await this.rolService.findAll();
+      let param = {
+        r_rol : {$ne: 'Administrador'}
+      }
+      const rols = await this.rolService.findAll(param);
       console.log(rols);
       res.send({results:rols});
   }

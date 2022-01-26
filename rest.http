@@ -17,9 +17,9 @@ POST http://localhost:3000/persona/crear
 content-type: application/json
 
 {
-    "p_nombres": "Tito Jose",
+    "p_nombres": "Renny",
     "p_apellidos":"Gorozabel Villavicencio",
-    "p_cedula":"1305412321"
+    "p_cedula":"1305412421"
 }
 ### BUSCAR
 
@@ -27,7 +27,7 @@ GET http://localhost:3000/persona/61e8f9c043a2dab293e11c88
 
 ### ELIMINAR
 
-DELETE http://localhost:3000/persona/del/61e901bd483ae25931c1b504
+DELETE http://localhost:3000/persona/del/61ee3f1d8094d681eb1f6fd2
 
 ### ACTUALIZAR
 
@@ -47,18 +47,18 @@ content-type: application/json
 {
     "persona":
     {
-        "p_nombres": "Tito Jose",
+        "p_nombres": "Renny",
         "p_apellidos":"Gorozabel Villavicencio",
-        "p_cedula":"1305412321"
+        "p_cedula":"1305412421"
     },
     "usuario":
     {
-        "u_usuario":"TitoGV",
-        "u_mail":"titojose@hotmail.com",
+        "u_usuario":"RGV",
+        "u_mail":"rennygoro@hotmail.com",
         "u_activo":true,
         "u_hash":"",
         "u_password":"",
-        "rol_id":"61e7dc21aed590273949963d"
+        "rol_id":"61e7dc27aed590273949963f"
     }
 }
 ### ACTUALIZAR
@@ -89,5 +89,13 @@ GET http://localhost:3000/users/61e902d8996cc57b8dca918d
 
 ###  LISTAR
 
-GET http://localhost:3000/users/all?user=TitoJG
+GET http://localhost:3000/users/all
 
+### Password (Sin Has confirm)
+POST http://localhost:3000/users/pass
+content-type: application/json
+
+{
+    "id_user":"61ee40368094d681eb1f6fdc",
+    "pass":"1234"
+}
