@@ -6,6 +6,8 @@ import { PersonaModule } from './persona/persona.module';
 import { ContactoModule } from './contacto/contacto.module';
 import { RolModule } from './rol/rol.module';
 import { UsuarioModule } from './usuario/usuario.module';
+import { PedidoModule } from './pedido/pedido.module';
+import { TicketService } from './ticket/ticket.service';
 
 @Module({
   imports: [
@@ -13,7 +15,9 @@ import { UsuarioModule } from './usuario/usuario.module';
     ContactoModule,
     RolModule,
     PersonaModule,
-    UsuarioModule
+    UsuarioModule,
+    PedidoModule,
+    TicketService
   ],
   controllers: [AppController],
   providers: [AppService],
