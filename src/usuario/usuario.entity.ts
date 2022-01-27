@@ -10,19 +10,19 @@ export type UsuarioDocument = Usuario & Document
 @Schema()
 export class Usuario{
 
-    @Prop({required:true})
+    @Prop({required:true, unique:true})
     u_usuario:string;
 
-    @Prop({required:true})
+    @Prop({required:true, unique:true})
     u_mail:string;
 
-    @Prop({required:true})
+    @Prop()
     u_password:string;
 
     @Prop({required:true})
     u_activo:boolean;
 
-    @Prop({required:true})
+    @Prop()
     u_hash:string;
 
     @Prop({type: mongoose.Schema.Types.ObjectId, ref:'Rol'})
