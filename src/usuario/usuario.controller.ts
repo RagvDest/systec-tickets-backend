@@ -75,7 +75,8 @@ export class UsuarioController{
                 session.usuario = usuario[0];
                 let rol = await this._rolServices.findByID(usuario[0].rol_id);
                 session.rol = rol;
-                res.send({mensaje:"Bienvenido!", usuario:session.usuario.u_usuario,rol:session.rol.r_rol});
+                let persona = await this._personaServices.findByID(usuario[0].persona_id);
+                res.send({usuario:session.usuario,rol:session.rol.r_rol, persona:persona});
             }
             else{
                 res.status(400).send({mensaje:"Error al iniciar sesión. Revise su usuario y contraseña"});
@@ -282,7 +283,7 @@ export class UsuarioController{
         let usuarios, personas, usuario, persona;
 
         let completo={
-            usuario:{},
+            username:{},
             persona:{}
         };
 
@@ -290,11 +291,11 @@ export class UsuarioController{
             usuarios = await this._usuarioServices.find(param);
             for(var i=0;i<usuarios.length;i++){
                 completo={
-                    usuario:{},
+                    username:{},
                     persona:{}
                 };
                 persona = await this._personaServices.findByID(usuarios[i].persona_id);
-                completo.usuario = usuarios[i];
+                completo.username = usuarios[i];
                 completo.persona = persona;
                 results.push(completo);
             }
@@ -302,11 +303,11 @@ export class UsuarioController{
             personas = await this._personaServices.findAll(param);
             for(var i=0;i<personas.length;i++){
                 completo={
-                    usuario:{},
+                    username:{},
                     persona:{}
                 };
                 usuario = await this._usuarioServices.findByPersonaID({persona_id:personas[i]._id});
-                completo.usuario = usuario;
+                completo.username = usuario;
                 completo.persona = personas[i];
                 results.push(completo);
             }
