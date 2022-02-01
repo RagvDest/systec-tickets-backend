@@ -9,8 +9,11 @@ export class Pedido{
     @Prop({required:true})
     ped_fc_registro:Date;
 
-    @Prop({required:true})
+    @Prop()
     ped_fc_fin:Date;
+
+    @Prop()
+    ped_estado:string;
 
     @Prop({type:mongoose.Schema.Types.ObjectId,ref:'Usuario'})
     usuario_id:Usuario

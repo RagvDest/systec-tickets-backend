@@ -8,6 +8,7 @@ import { RolModule } from './rol/rol.module';
 import { UsuarioModule } from './usuario/usuario.module';
 import { PedidoModule } from './pedido/pedido.module';
 import { TicketService } from './ticket/ticket.service';
+import { TicketModule } from './ticket/ticket.module';
 
 @Module({
   imports: [
@@ -17,7 +18,7 @@ import { TicketService } from './ticket/ticket.service';
     PersonaModule,
     UsuarioModule,
     PedidoModule,
-    TicketService
+    TicketModule
   ],
   controllers: [AppController],
   providers: [AppService],

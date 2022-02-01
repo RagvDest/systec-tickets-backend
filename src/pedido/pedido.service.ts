@@ -7,8 +7,8 @@ import { Pedido } from './pedido.entity';
 export class PedidoService{
     constructor(@InjectModel(Pedido.name) private pedidoModel:Model<Pedido>){}
 
-    async find(param?):Promise<Pedido[]>{
-        return this.pedidoModel.find(param).exec();
+    async find(param?,orden?):Promise<Pedido[]>{
+        return this.pedidoModel.find(param).sort({ped_fc_registro:orden}).exec();
     }
     async findByID(id?):Promise<Pedido>{
         return this.pedidoModel.findById(id).exec();
