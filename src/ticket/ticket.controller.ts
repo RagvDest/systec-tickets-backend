@@ -1,23 +1,28 @@
-import { BadRequestException, Body, Controller, Get, Patch, Post, Res, ValidationPipe } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Param, Patch, Post, Res, ValidationPipe } from '@nestjs/common';
 import { Ticket} from './ticket.entity';
 import { validate } from 'class-validator';
 import { TicketService } from './ticket.service';
 import { PedidoService } from 'src/pedido/pedido.service';
-import { TicketCreateDto } from './dto/pedido.create.dto';
+import { TicketCreateDto } from './dto/ticket.create.dto';
+import { UsuarioService } from 'src/usuario/usuario.service';
+import { PersonaService } from 'src/persona/persona.service';
 
 @Controller('ticket')
 export class TicketController {
   constructor(
     private readonly ticketService: TicketService,
-    private readonly pedidoService: PedidoService) {}
+    private readonly pedidoService: PedidoService,
+    private readonly usuarioService: UsuarioService,
+    private readonly personaService: PersonaService) {}
 
 
   @Patch('update/:idTicket')
   async actualizarTicket(
     @Res() res,
     @Body('ticket') ticket:Ticket,
-    @Body('idTicket') idTicket?
+    @Param('idTicket') idTicket?
   ){
+    console.log(idTicket);
     try {
       const ticketEncontrado = await this.ticketService.findByID(idTicket); 
       if(ticketEncontrado==null){
@@ -27,14 +32,15 @@ export class TicketController {
       const tick = new TicketCreateDto();
       tick.t_detalle = ticket.t_detalle;
       tick.t_saldo = ticket.t_saldo;
-      tick.pedido_id = ticket.pedido_id
+      tick.t_abono = ticket.t_abono;
+      tick.t_tipo_equipo = ticket.t_tipo_equipo;
 
       const errores = await validate(tick);
       if(errores.length>0){
         console.error(errores);
         res.send({errores:errores});
       }
-      const ticketActualizado = await this.actualizarTicket(ticketEncontrado['_id'],ticket);
+      const ticketActualizado = await this.ticketService.updateByID(ticketEncontrado['_id'],ticket);
       res.send({ticket:ticketActualizado});
     } catch (error) {
       console.error(error);
@@ -50,12 +56,19 @@ export class TicketController {
       
   ) {
     let pedido;
+    let numTicket = Math.random().toString(36).substring(2, 5)+"-"+
+                    Math.random().toString(36).substring(2, 5)+"-"+
+                    Math.random().toString(36).substring(2, 5);
       try {
-        pedido = this.pedidoService.findByID(id_pedido);
+        pedido = await this.pedidoService.findByID(id_pedido);
         const ticketDto = new TicketCreateDto();
         ticketDto.t_detalle = ticket.t_detalle;
         ticketDto.t_saldo = ticket.t_saldo;
-        ticketDto.pedido_id = ticket.pedido_id;
+        ticketDto.t_abono = ticket.t_abono;
+        ticketDto.t_tipo_equipo = ticket.t_tipo_equipo; 
+        
+        ticket.pedido_id = pedido;
+        ticket.t_num = numTicket.toUpperCase();
 
         const errores = await validate(ticketDto);
         if(errores.length>0){
@@ -70,14 +83,21 @@ export class TicketController {
       }
   }
 
-  @Get('all')
+  @Get('all/:idPedido')
   async findAll(
-      @Res() res?
+      @Res() res?,
+      @Param('idPedido') idPedido?
   ) {
-      
-      const tickets = await this.ticketService.find();
+      const tickets = await this.ticketService.find({pedido_id:idPedido});
+      const pedido = await this.pedidoService.findByID(idPedido);
+      const usuario = await this.usuarioService.findByID(pedido.usuario_id);
+      const persona = await this.personaService.findByID(usuario.persona_id);
+      const completo ={
+        tickets:tickets,
+        p_nombres:persona.p_nombres+" "+persona.p_apellidos
+      }
       console.log(tickets);
-      res.send({results:tickets});
+      res.send({results:completo});
   }
 
 }

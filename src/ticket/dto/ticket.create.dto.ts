@@ -1,5 +1,6 @@
 import { IsNumber, IsNotEmpty, IsString, IsEmpty, IsEmail} from "class-validator";
 import { Pedido } from "src/pedido/pedido.entity";
+import { Usuario } from "src/usuario/usuario.entity";
 
 
 export class TicketCreateDto{
@@ -7,9 +8,12 @@ export class TicketCreateDto{
     @IsString()
     t_detalle:string;
 
+    @IsString()
+    t_tipo_equipo:string;
+
     @IsNumber()
     t_saldo:number;
 
-    @IsNotEmpty()
-    pedido_id:Pedido;
+    @IsNumber()
+    t_abono:number;
 }

@@ -71,7 +71,8 @@ content-type: application/json
     {
         "p_nombres": "Tito Joses",
         "p_apellidos":"Gorozabel Villavicencio",
-        "p_cedula":"1305412321"
+        "p_cedula":"1305412321",
+        "p_tel":"0983456585"
     },
     "usuario":
     {
@@ -99,3 +100,70 @@ content-type: application/json
     "id_user":"61ee40368094d681eb1f6fdc",
     "pass":"1234"
 }
+
+### --- PEDIDOS LISTAR
+
+GET http://localhost:3000/pedido/all?
+
+### Crear PEDIDO
+POST http://localhost:3000/pedido/crear
+content-type: application/json
+
+{
+    "pedido":
+    {
+        "ped_fc_registro":"2022-02-01T09:37:12.168Z",
+        "ped_fc_fin":null
+    },
+    "id_usuario":"61e902d8996cc57b8dca918d"
+}
+
+### ACTUALIZAR PEDIDO
+PATCH http://localhost:3000/pedido/update/61f900151c56deb4b891b893
+content-type: application/json
+
+{
+    "pedido":
+    {
+        "ped_fc_registro":"2022-02-01T09:37:12.168Z",
+        "ped_fc_fin":null,
+        "ped_estado":"ABIERTO"
+    },
+    "id_usuario":"61e902d8996cc57b8dca918d"
+}
+
+
+### LISTAR TICKETS
+GET http://localhost:3000/ticket/all/61f900151c56deb4b891b893
+
+### CREAR TICKET
+POST http://localhost:3000/ticket/crear
+content-type: application/json
+
+{
+    "ticket":
+    {
+        "t_detalle":"NO ENCIENDE, PANTALLA ROTA",
+        "t_saldo":0,
+        "t_abono":0,
+        "t_tipo_equipo":"COMPUTADOR"
+    },
+    "id_pedido":"61f900151c56deb4b891b893"
+}
+
+### ACTUALIZAR TICKET
+PATCH http://localhost:3000/ticket/update/61fa413bb824c6f4f359065c
+content-type: application/json
+
+{
+    "ticket":
+    {
+        "t_detalle":"NO ENCIENDE, PANTALLA ROTISIMA",
+        "t_saldo":0,
+        "t_num":"ox4-bc2-9jk",
+        "t_abono":0,
+        "t_tipo_equipo":"COMPUTADOR"
+    }
+}
+
+

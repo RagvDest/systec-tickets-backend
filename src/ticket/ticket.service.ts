@@ -23,6 +23,5 @@ export class TicketService{
 
     async findByPedidoID(param?):Promise<Ticket>{
         return this.ticketModel.findOne(param).exec();
-
     }
 }

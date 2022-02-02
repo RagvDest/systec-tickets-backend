@@ -112,7 +112,9 @@ export class PedidoController {
       pedido:{},
       p_nombres:"",
       p_cedula:"",
-      id_usuario:""
+      id_usuario:"",
+      p_tel:""
+      
     }
     personas = await this._personaServices.findAll(param);
     for(var i=0;i<personas.length;i++){
@@ -120,7 +122,8 @@ export class PedidoController {
         pedido:{},
         p_nombres:"",
         p_cedula:"",
-        id_usuario:""
+        id_usuario:"",
+        p_tel:""
       };
       usuario = await this.usuarioService.findByPersonaID({persona_id:personas[i]._id});
       let query;
@@ -138,6 +141,7 @@ export class PedidoController {
         completo.p_nombres = personas[i].p_nombres+" "+personas[i].p_apellidos;
         completo.p_cedula = personas[i].p_cedula;
         completo.id_usuario = usuario['_id'];
+        completo.p_tel = personas[i].p_tel;
         results.push(completo);
 
       }
