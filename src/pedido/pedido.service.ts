@@ -20,7 +20,6 @@ export class PedidoService{
     async updateByID(pedido_id?,query?):Promise<Pedido>{
         return this.pedidoModel.findByIdAndUpdate(pedido_id,query,{upsert:false});
     }
-
     async findByUsuarioID(param?):Promise<Pedido>{
         return this.pedidoModel.findOne(param).exec();
 

@@ -18,7 +18,8 @@ import { TicketModule } from './ticket/ticket.module';
     PersonaModule,
     UsuarioModule,
     PedidoModule,
-    TicketModule
+    TicketModule,
+    EstadoModule
   ],
   controllers: [AppController],
   providers: [AppService],

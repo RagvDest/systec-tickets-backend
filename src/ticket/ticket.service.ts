@@ -20,8 +20,10 @@ export class TicketService{
     async updateByID(ticket_id?,query?):Promise<Ticket>{
         return this.ticketModel.findByIdAndUpdate(ticket_id,query,{upsert:false});
     }
-
     async findByPedidoID(param?):Promise<Ticket>{
         return this.ticketModel.findOne(param).exec();
+    }
+    async updateEstado(ticket_id:string,estado:string):Promise<Ticket>{
+        return this.ticketModel.findByIdAndUpdate(ticket_id,{t_estado:estado});
     }
 }

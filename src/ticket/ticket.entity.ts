@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import * as mongoose from 'mongoose';
+import { Estado } from "src/estado/estado.entity";
 import { Pedido } from "src/pedido/pedido.entity";
 import { Usuario } from "src/usuario/usuario.entity";
 
@@ -11,7 +12,7 @@ export class Ticket{
     t_detalle:string;
 
     @Prop({required:true})
-    t_saldo:number;
+    t_total:number;
 
     @Prop({required:true})
     t_abono:number;
@@ -21,6 +22,12 @@ export class Ticket{
 
     @Prop({required:true})
     t_tipo_equipo:string;
+
+    @Prop({required:true})
+    t_estado:string;
+
+    @Prop({type:mongoose.Schema.Types.ObjectId,ref:'Estado'})
+    estado_id:Estado;
 
     @Prop({type:mongoose.Schema.Types.ObjectId,ref:'Pedido'})
     pedido_id:Pedido

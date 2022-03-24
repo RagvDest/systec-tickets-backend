@@ -80,7 +80,7 @@ content-type: application/json
         "u_mail":"titojoses@hotmail.com",
         "u_activo":true,
         "u_hash":"",
-        "u_password":"",
+        "u_password":"12355",
         "rol_id":"61e7dc21aed590273949963d"
     }
 }
@@ -97,7 +97,7 @@ POST http://localhost:3000/users/pass
 content-type: application/json
 
 {
-    "id_user":"61ee40368094d681eb1f6fdc",
+    "id_user":"61e902d8996cc57b8dca918d",
     "pass":"1234"
 }
 
@@ -143,16 +143,16 @@ content-type: application/json
 {
     "ticket":
     {
-        "t_detalle":"NO ENCIENDE, PANTALLA ROTA",
-        "t_saldo":0,
-        "t_abono":0,
+        "t_detalle":"PRUEBA 21",
+        "t_total":11,
+        "t_abono":5,
         "t_tipo_equipo":"COMPUTADOR"
     },
     "id_pedido":"61f900151c56deb4b891b893"
 }
 
 ### ACTUALIZAR TICKET
-PATCH http://localhost:3000/ticket/update/61fa413bb824c6f4f359065c
+PATCH http://localhost:3000/ticket/update/61f900151c56deb4b891b893
 content-type: application/json
 
 {
@@ -166,4 +166,47 @@ content-type: application/json
     }
 }
 
+### ------------ ESTADOS CREAR
+POST http://localhost:3000/estado/crear
+content-type: application/json
 
+{
+    "estado":{
+        "e_nombre":"COMPLETO",
+        "e_detalle":"Listo para entrega",
+        "e_usuario":"Juan Segundo",
+        "user_id": {
+            "persona_id": "61e902d8996cc57b8dca918a",
+            "u_activo": true,
+            "u_mail": "titojoses@hotmail.com",
+            "u_usuario": "TitoGV",
+            "_id": "61e902d8996cc57b8dca918d"
+            }
+    },
+    "id_ticket":"62395dc0497153b3cfb10b6b"
+}
+
+### UPDATE ESTADO
+PATCH http://localhost:3000/estado/update/623a4863ec10d1bb34a2a93d
+content-type: application/json
+
+{
+    "comentario":{
+        "c_detalle":"Mas comentarios",
+        "c_usuario":"TitoGV",
+        "user_id": "61e902d8996cc57b8dca918d"
+    }
+}
+
+
+### LISTAR
+GET http://localhost:3000/estado/all/6238cb19287d5b3d5dcaa20d
+
+
+
+### LISTAR
+GET http://localhost:3000/estado/allLast/6238cacc287d5b3d5dcaa20a
+
+### Comentarios
+
+GET http://localhost:3000/estado/comentarios/623a4863ec10d1bb34a2a93d

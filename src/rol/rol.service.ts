@@ -13,9 +13,11 @@ export class RolService{
     async findByID(id?):Promise<Rol>{
         return this.rolModel.findById(id).exec();
     }
-
     async crearRol(rol:Rol):Promise<Rol>{
         const rolCreado = new this.rolModel(rol);
         return rolCreado.save();
+    }
+    async deleteRol(idRol?){
+        return this.rolModel.findByIdAndDelete(idRol);
     }
 }

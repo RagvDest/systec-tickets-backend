@@ -26,8 +26,8 @@ export class UsuarioController{
         @Res() res,
         @Session() session
     ){
-        console.log("Hola");
-      session.usuarioNombre=undefined;
+      console.log("Hola");
+      session.usuario=undefined;
       session.destroy();
       res.status(200).send({mensaje:"Ha cerrado su sesión"});
   }
@@ -62,20 +62,28 @@ export class UsuarioController{
         @Body('username') username,
         @Session() session
     ){
+        console.log(username);
+        console.log(pass);
         try {
-            console.log(username);
-            console.log(pass);
-            const usuario = await this._usuarioServices.find({u_usuario:username});
-            if(usuario.length<=0){
+            let usuarioArr = await this._usuarioServices.find({u_usuario:username});
+            let usuario = usuarioArr[0];
+            if(usuario==null){
                 res.status(400).send({mensaje:"Error al iniciar sesión. Revise su usuario y contraseña"});
-                throw new Error("Error al iniciar sesión. Revise su usuario y contraseña");
+                throw new Error("Error al iniciar sesión. Revise su usuario1 y contraseña");
             }
-            const match = await bcrypt.compare(pass,usuario[0].u_password);
+            const match = await bcrypt.compare(pass,usuario.u_password);
             if(match){
-                session.usuario = usuario[0];
-                let rol = await this._rolServices.findByID(usuario[0].rol_id);
+                let usuarioSession = {
+                    _id:usuario["_id"],
+                    persona_id:usuario.persona_id,
+                    u_mail:usuario.u_mail,
+                    u_activo:usuario.u_activo,
+                    u_usuario:usuario.u_usuario
+                };
+                session.usuario = usuarioSession;
+                let rol = await this._rolServices.findByID(usuario.rol_id);
                 session.rol = rol;
-                let persona = await this._personaServices.findByID(usuario[0].persona_id);
+                let persona = await this._personaServices.findByID(usuario.persona_id);
                 res.send({usuario:session.usuario,rol:session.rol.r_rol, persona:persona});
             }
             else{
@@ -163,6 +171,7 @@ export class UsuarioController{
             const rol_id = await this._rolServices.findByID(rol);
             usuario.rol_id = rol_id;
             
+            //Validacion DTO
             const user = new UsuarioCreateDto();
             user.u_mail = usuario.u_mail;
             user.u_usuario = usuario.u_usuario;
@@ -226,6 +235,7 @@ export class UsuarioController{
             const user = new UsuarioUpdateDto();
             user.u_mail = usuario.u_mail;
             user.u_usuario = usuario.u_usuario
+            delete usuario.u_password;
 
             const person = new PersonaUpdateDto();
             person.p_nombres = persona.p_nombres;

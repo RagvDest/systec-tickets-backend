@@ -23,14 +23,11 @@ export class PedidoController {
     @Param('idPedido') idPedido?
   ){
     try {
-      console.log("Buenas");
       const pedidoEncontrado = await this.pedidoService.findByID(idPedido); 
-      console.log(pedidoEncontrado);
       if(pedidoEncontrado==null){
         res.status(400).send({error:'No existe pedido'});
         throw new BadRequestException('No existe pedido');
       }
-      console.log("Ok");
 
       const ped = new PedidoCreateDto();
       ped.ped_fc_registro = new Date(pedido.ped_fc_registro);
@@ -133,8 +130,6 @@ export class PedidoController {
         query = {usuario_id:usuario['_id'], ped_estado:estado};
       pedidos = await this.pedidoService.find(query,orden);
       
-      console.log(pedidos);
-
       for(var u=0;u<pedidos.length;u++){
         console.log(u);
         completo.pedido = pedidos[u];
@@ -143,15 +138,8 @@ export class PedidoController {
         completo.id_usuario = usuario['_id'];
         completo.p_tel = personas[i].p_tel;
         results.push(completo);
-
       }
-
-
-      
     }
-
-    
-    console.log('Results: '+JSON.stringify(results));
     return results;
   }
 

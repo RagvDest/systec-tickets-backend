@@ -7,11 +7,14 @@ import { Estado } from './estado.entity';
 export class EstadoService{
     constructor(@InjectModel(Estado.name) private estadoModel:Model<Estado>){}
 
-    async findAll():Promise<Estado[]>{
-        return this.estadoModel.find().exec();
+    async findAll(param?):Promise<Estado[]>{
+        return this.estadoModel.find(param).exec();
     }
     async findByID(id?):Promise<Estado>{
         return this.estadoModel.findById(id).exec();
+    }
+    async findLast(param?):Promise<Estado>{
+        return this.estadoModel.findOne(param).sort({e_secuencial:-1}).exec();
     }
 
     async create(estado?):Promise<Estado>{
@@ -21,4 +24,12 @@ export class EstadoService{
     async deleteEstado(id:string){
         return this.estadoModel.findByIdAndDelete(id).exec();
     }
+
+    async updateByID(estado_id?,query?):Promise<Estado>{
+        return this.estadoModel.findByIdAndUpdate(estado_id,query,{upsert:false});
+    }
+    async findByTicketID(param?):Promise<Estado[]>{
+        return this.estadoModel.find(param).sort({e_secuencial:-1}).exec();
+    }    
+
 }

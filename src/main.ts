@@ -25,7 +25,7 @@ async function bootstrap() {
       resave: false,
       saveUninitialized: true,
       cookie: {
-        secure: false
+        secure: true
       },
       store: new FileStore()
     })

@@ -3,9 +3,10 @@ import { Ticket} from './ticket.entity';
 import { validate } from 'class-validator';
 import { TicketService } from './ticket.service';
 import { PedidoService } from 'src/pedido/pedido.service';
-import { TicketCreateDto } from './dto/ticket.create.dto';
+import { TicketUpdateDto } from './dto/ticket.update.dto';
 import { UsuarioService } from 'src/usuario/usuario.service';
 import { PersonaService } from 'src/persona/persona.service';
+import { TicketCreateDto } from './dto/ticket.create.dto';
 
 @Controller('ticket')
 export class TicketController {
@@ -22,18 +23,20 @@ export class TicketController {
     @Body('ticket') ticket:Ticket,
     @Param('idTicket') idTicket?
   ){
-    console.log(idTicket);
+    console.log(JSON.stringify(idTicket));
     try {
       const ticketEncontrado = await this.ticketService.findByID(idTicket); 
       if(ticketEncontrado==null){
         res.status(400).send({error:'No existe ticket'});
                 throw new BadRequestException('No existe ticket');
       }
-      const tick = new TicketCreateDto();
+
+      const tick = new TicketUpdateDto();
       tick.t_detalle = ticket.t_detalle;
-      tick.t_saldo = ticket.t_saldo;
+      tick.t_total = ticket.t_total;
       tick.t_abono = ticket.t_abono;
       tick.t_tipo_equipo = ticket.t_tipo_equipo;
+      tick.id_ticket = ticketEncontrado;
 
       const errores = await validate(tick);
       if(errores.length>0){
@@ -41,13 +44,12 @@ export class TicketController {
         res.send({errores:errores});
       }
       const ticketActualizado = await this.ticketService.updateByID(ticketEncontrado['_id'],ticket);
-      res.send({ticket:ticketActualizado});
+      res.send({ticket:Object.assign(ticketActualizado,ticket)});
     } catch (error) {
       console.error(error);
     }
 
   }
-
   @Post('crear')
   async crearTicket(
       @Res() res,
@@ -63,18 +65,21 @@ export class TicketController {
         pedido = await this.pedidoService.findByID(id_pedido);
         const ticketDto = new TicketCreateDto();
         ticketDto.t_detalle = ticket.t_detalle;
-        ticketDto.t_saldo = ticket.t_saldo;
+        ticketDto.t_total = ticket.t_total;
         ticketDto.t_abono = ticket.t_abono;
         ticketDto.t_tipo_equipo = ticket.t_tipo_equipo; 
+        ticketDto.id_pedido = pedido;
         
         ticket.pedido_id = pedido;
         ticket.t_num = numTicket.toUpperCase();
+        ticket.t_estado = 'Nuevo';
 
         const errores = await validate(ticketDto);
         if(errores.length>0){
           console.error(errores);
           res.send({errores:errores});
         }else{
+          console.log("Ticket creado: "+ticket.t_num+" - Pedido: "+id_pedido);
             const ticketCreado = await this.ticketService.create(ticket);
             res.send({ticketCreado: ticketCreado});
         }
@@ -82,7 +87,6 @@ export class TicketController {
         console.error(error);
       }
   }
-
   @Get('all/:idPedido')
   async findAll(
       @Res() res?,
