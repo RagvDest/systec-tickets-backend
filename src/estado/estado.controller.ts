@@ -1,5 +1,6 @@
 import { Body, Controller, Get, HttpException, Param, Patch, Post, Res, Session } from "@nestjs/common";
 import { validate } from 'class-validator';
+import { RolService } from "src/rol/rol.service";
 import { TicketService } from "src/ticket/ticket.service";
 import { Comentario } from "./comentario.entity";
 import { EstadoCreateDto } from "./dto/estado.create.dto";
@@ -11,7 +12,8 @@ import { EstadoService } from "./estado.service";
 export class EstadoController {
   constructor(
     private readonly ticketService: TicketService,
-    private readonly estadoService: EstadoService) {}
+    private readonly estadoService: EstadoService,
+    private readonly rolService:RolService) {}
 
     @Post('crear')
     async crearEstado(
@@ -22,6 +24,14 @@ export class EstadoController {
     ){
         let ticket;
         try {
+            if(await this.rolService.isUserType(session,['Admin','Empleado'])){
+                res.status(403).send({
+                  "statusCode": 403,
+                  "message": "Forbidden resource",
+                  "error": "Forbidden"
+                });
+                return;
+              }
             ticket = await this.ticketService.findByID(id_ticket);
             if(ticket==null){
                 res.status(400).send({error:'Ticket no existe'});
@@ -61,8 +71,17 @@ export class EstadoController {
         @Res() res,
         @Body('comentario') comentario:Comentario,
         @Param('idEstado') id_estado,
+        @Session() session
     ){
         try {
+            if(await this.rolService.isUserType(session,[])){
+                res.status(403).send({
+                  "statusCode": 403,
+                  "message": "Forbidden resource",
+                  "error": "Forbidden"
+                });
+                return;
+              }
             const estadoEncontrado = await this.estadoService.findByID(id_estado);
             let estado = estadoEncontrado;
             if(estado==null){
@@ -96,8 +115,17 @@ export class EstadoController {
     async buscarTodos(
         @Res() res,
         @Param('idTicket') ticket_id,
+        @Session() session
     ){
         try {
+            if(await this.rolService.isUserType(session,[])){
+                res.status(403).send({
+                  "statusCode": 403,
+                  "message": "Forbidden resource",
+                  "error": "Forbidden"
+                });
+                return;
+              }
             const estadosEncontrado = await this.estadoService.findByTicketID({ticket_id:ticket_id});
             res.send({estado:estadosEncontrado,ticket:null});
         } catch (error) {
@@ -108,9 +136,18 @@ export class EstadoController {
     @Get('comentarios/:idEstado')
     async buscarPrueba(
         @Res() res,
-        @Param('idEstado') estado_id
+        @Param('idEstado') estado_id,
+        @Session() session
     ){
         try {
+            if(await this.rolService.isUserType(session,[])){
+                res.status(403).send({
+                  "statusCode": 403,
+                  "message": "Forbidden resource",
+                  "error": "Forbidden"
+                });
+                return;
+              }
             let comentarios = [];
             let estado = await this.estadoService.findByID(estado_id);
             if(estado!=null){

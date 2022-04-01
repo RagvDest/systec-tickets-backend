@@ -5,13 +5,11 @@ import * as session from 'express-session'; // Typescript
 var cors = require('cors')
 const FileStore = require('session-file-store')(session); // Nodejs
 
-const cookieParser = require('cookie-parser');
-
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.use(cookieParser('Clave Secreta'));
   app.use(express.static('public'));
+  
 
   app.use(cors({
     origin : 'http://localhost:3001',
@@ -23,9 +21,9 @@ async function bootstrap() {
       name: 'server-session-id',
       secret: 'hasta las 15',
       resave: false,
-      saveUninitialized: true,
+      saveUninitialized: false,
       cookie: {
-        secure: true
+        secure: false
       },
       store: new FileStore()
     })

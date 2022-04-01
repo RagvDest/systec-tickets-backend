@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Delete, Get, Headers, Param, Patch, Post, Query, Res, Session} from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Headers, Logger, Param, Patch, Post, Query, Res, Session} from '@nestjs/common';
 import { PersonaCreateDto } from 'src/persona/dto/persona.create.dto';
 import { Persona } from 'src/persona/persona.entity';
 import { UsuarioCreateDto } from './dto/usuario.create.dto';
@@ -21,6 +21,8 @@ export class UsuarioController{
         private readonly _rolServices:RolService
     ){}
 
+    private logger:Logger = new Logger('UsuarioController');
+
     @Get('logout')
     logout(
         @Res() res,
@@ -39,6 +41,7 @@ export class UsuarioController{
         @Body('pass') pass,
         @Body('id_user') idUsuario
     ){
+        //Pendiente implementar el código por mail
         try {
             const usuario = await this._usuarioServices.findByID(idUsuario);
             if(usuario == null){
@@ -51,7 +54,7 @@ export class UsuarioController{
             
             res.status(200).send({usuarioActualizado,mensaje:"Contraseña guardada"});
         } catch (error) {
-            console.error(error);
+            this.logger.error(error)
         }
     }
 
@@ -71,6 +74,7 @@ export class UsuarioController{
                 res.status(400).send({mensaje:"Error al iniciar sesión. Revise su usuario y contraseña"});
                 throw new Error("Error al iniciar sesión. Revise su usuario1 y contraseña");
             }
+            this.logger.debug(JSON.stringify(usuario));
             const match = await bcrypt.compare(pass,usuario.u_password);
             if(match){
                 let usuarioSession = {
@@ -84,27 +88,36 @@ export class UsuarioController{
                 let rol = await this._rolServices.findByID(usuario.rol_id);
                 session.rol = rol;
                 let persona = await this._personaServices.findByID(usuario.persona_id);
+                console.log(session);
                 res.send({usuario:session.usuario,rol:session.rol.r_rol, persona:persona});
             }
             else{
                 res.status(400).send({mensaje:"Error al iniciar sesión. Revise su usuario y contraseña"});
                 throw new Error("Error al iniciar sesión. Revise su usuario y contraseña");
             }
-            
-            
         } catch (error) {
-            console.error(error);
-            res.send({error});
+            this.logger.error(error)
         }
     }
 
     @Get('all')
     async buscarUsuarios(
         @Res() res,
+        @Session() session,
         @Query('filtro') filtro?,
         @Query('input') input?,
-        @Query('op') op?
+        @Query('op') op?,
     ){
+        console.log(session);
+        if(await this._rolServices.isUserType(session,['Admin','Empleado'])){
+            console.log("Dentro");
+            res.status(403).send({
+              "statusCode": 403,
+              "message": "Forbidden resource",
+              "error": "Forbidden"
+            });
+            return;
+          }
         let param;
         if(filtro=='Username')
             param = {u_usuario: { $regex: '.*' + input + '.*' }}
@@ -118,7 +131,7 @@ export class UsuarioController{
             const results = await this.llenarDatos(op,param);    
             res.send({results:results});
         } catch (error) {
-            console.error(error);
+            this.logger.error(error)
             res.status(500).send();
         }
         
@@ -128,9 +141,18 @@ export class UsuarioController{
     @Patch('estado/:idUsuario')
     async cambiarEstado(
         @Res() res,
-        @Param('idUsuario') idUsuario
+        @Param('idUsuario') idUsuario,
+        @Session() session
     ){
         try {
+            if(await this._rolServices.isUserType(session,['Admin','Empleado'])){
+                res.status(403).send({
+                  "statusCode": 403,
+                  "message": "Forbidden resource",
+                  "error": "Forbidden"
+                });
+                return;
+              }
             const usuarioEncontrado = await this._usuarioServices.findByID(idUsuario);
             if(usuarioEncontrado==null){
                 res.status(400).send({error:'Usuario no existe'});
@@ -141,7 +163,7 @@ export class UsuarioController{
             res.status(200).send(usuarioActualizado);
 
         } catch (error) {
-            console.error(error);
+            this.logger.error(error)
         }
     }
 
@@ -161,10 +183,19 @@ export class UsuarioController{
         @Res() res,
         @Body('usuario') usuario:Usuario,
         @Body('persona') persona:Persona,
-        @Body('rol') rol:string
+        @Body('rol') rol:string,
+        @Session() session
     ){
         var id_persona;
         try {
+            if(await this._rolServices.isUserType(session,['Admin','Empleado'])){
+                res.status(403).send({
+                  "statusCode": 403,
+                  "message": "Forbidden resource",
+                  "error": "Forbidden"
+                });
+                return;
+              }
             id_persona = await this.crearPersona(res,persona);
             usuario.persona_id = id_persona;
 
@@ -189,7 +220,7 @@ export class UsuarioController{
                 res.send({ok:true,usuarioCreado:usuarioCreado})
             }
         } catch (error) {
-            console.error(error);
+            this.logger.error(error);
             // Eliminar persona
             await this._personaServices.deletePerson(id_persona['_id']);
         }
@@ -198,9 +229,18 @@ export class UsuarioController{
     @Get(':idUsuario')
     async buscarUsuarioID(
         @Res() res,
-        @Param('idUsuario') idUsuario:string
+        @Param('idUsuario') idUsuario:string,
+        @Session() session
     ){
         try {
+            if(await this._rolServices.isUserType(session,[])){
+                res.status(403).send({
+                  "statusCode": 403,
+                  "message": "Forbidden resource",
+                  "error": "Forbidden"
+                });
+                return;
+              }
             const usuarioEncontrado = await this._usuarioServices.findByID(idUsuario);
             if(usuarioEncontrado==null){
                 res.status(400).send({error:'No existe usuario'});
@@ -210,7 +250,7 @@ export class UsuarioController{
             const rolEncontrado = await this._rolServices.findByID(usuarioEncontrado.rol_id);
             res.send({usuario:usuarioEncontrado, persona:personaEncontrada, rol:rolEncontrado});
         } catch (error) {
-            console.error(error);
+            this.logger.error(error);
             res.status(400).send({error:error});
         }
     }
@@ -220,10 +260,20 @@ export class UsuarioController{
         @Res() res,
         @Body('usuario') usuario:Usuario,
         @Body('persona') persona:Persona,
+        @Session() session,
         @Param('idUsuario') idUsuario?
     ){
         var idPersona;
         try {
+            if(await this._rolServices.isUserType(session,['Admin','Cliente'])){
+                res.status(403).send({
+                  "statusCode": 403,
+                  "message": "Forbidden resource",
+                  "error": "Forbidden"
+                });
+                return;
+              }
+                  
             const usuarioEncontrado = await this._usuarioServices.findByID(idUsuario);
             if(usuarioEncontrado==null){
                 res.status(400).send({error:'No existe usuario'});
@@ -256,7 +306,7 @@ export class UsuarioController{
                 res.send({usuario:usuarioActualizado,persona:personaActualizada});
             }
         } catch (error) {
-            console.error(error);
+            this.logger.error(error)
             // Eliminar persona
         }
     }
@@ -281,7 +331,7 @@ export class UsuarioController{
                 return personaCreada;
             }
         } catch (error) {
-            console.error(error);
+            this.logger.error(error)
         }
     }
 

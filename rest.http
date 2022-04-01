@@ -1,3 +1,13 @@
+
+### Logearse
+POST http://localhost:3000/users/logIn
+content-type: application/json
+
+{
+    "password": "1234",
+    "username": "TitoGV"
+}
+
 ### ROL
 
 GET http://localhost:3000/rol/all

@@ -3,6 +3,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Persona, PersonaSchema } from 'src/persona/persona.entity';
 import { PersonaModule } from 'src/persona/persona.module';
 import { PersonaService } from 'src/persona/persona.service';
+import { RolController } from 'src/rol/rol.controller';
 import { Rol, RolSchema } from 'src/rol/rol.entity';
 import { RolModule } from 'src/rol/rol.module';
 import { RolService } from 'src/rol/rol.service';

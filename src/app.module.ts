@@ -9,6 +9,7 @@ import { UsuarioModule } from './usuario/usuario.module';
 import { PedidoModule } from './pedido/pedido.module';
 import { TicketService } from './ticket/ticket.service';
 import { TicketModule } from './ticket/ticket.module';
+import { AppGateway } from './app.gateway';
 
 @Module({
   imports: [
@@ -22,6 +23,6 @@ import { TicketModule } from './ticket/ticket.module';
     EstadoModule
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, AppGateway],
 })
 export class AppModule {}

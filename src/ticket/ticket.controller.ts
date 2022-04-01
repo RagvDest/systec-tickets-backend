@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Param, Patch, Post, Res, ValidationPipe } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Logger, Param, Patch, Post, Res, Session, ValidationPipe } from '@nestjs/common';
 import { Ticket} from './ticket.entity';
 import { validate } from 'class-validator';
 import { TicketService } from './ticket.service';
@@ -7,6 +7,7 @@ import { TicketUpdateDto } from './dto/ticket.update.dto';
 import { UsuarioService } from 'src/usuario/usuario.service';
 import { PersonaService } from 'src/persona/persona.service';
 import { TicketCreateDto } from './dto/ticket.create.dto';
+import { RolService } from 'src/rol/rol.service';
 
 @Controller('ticket')
 export class TicketController {
@@ -14,17 +15,28 @@ export class TicketController {
     private readonly ticketService: TicketService,
     private readonly pedidoService: PedidoService,
     private readonly usuarioService: UsuarioService,
-    private readonly personaService: PersonaService) {}
+    private readonly personaService: PersonaService,
+    private readonly _rolServices:RolService){}
 
+    private logger:Logger = new Logger('PersonaController');
 
   @Patch('update/:idTicket')
   async actualizarTicket(
     @Res() res,
     @Body('ticket') ticket:Ticket,
+    @Session() session,
     @Param('idTicket') idTicket?
   ){
     console.log(JSON.stringify(idTicket));
     try {
+      if(await this._rolServices.isUserType(session,['Admin','Empleado'])){
+        res.status(403).send({
+          "statusCode": 403,
+          "message": "Forbidden resource",
+          "error": "Forbidden"
+        });
+        return;
+      }
       const ticketEncontrado = await this.ticketService.findByID(idTicket); 
       if(ticketEncontrado==null){
         res.status(400).send({error:'No existe ticket'});
@@ -46,7 +58,7 @@ export class TicketController {
       const ticketActualizado = await this.ticketService.updateByID(ticketEncontrado['_id'],ticket);
       res.send({ticket:Object.assign(ticketActualizado,ticket)});
     } catch (error) {
-      console.error(error);
+      this.logger.error(error);
     }
 
   }
@@ -54,6 +66,7 @@ export class TicketController {
   async crearTicket(
       @Res() res,
       @Body('ticket') ticket:Ticket,
+      @Session() session,
       @Body('id_pedido') id_pedido?
       
   ) {
@@ -62,6 +75,14 @@ export class TicketController {
                     Math.random().toString(36).substring(2, 5)+"-"+
                     Math.random().toString(36).substring(2, 5);
       try {
+        if(await this._rolServices.isUserType(session,['Admin','Empleado'])){
+          res.status(403).send({
+            "statusCode": 403,
+            "message": "Forbidden resource",
+            "error": "Forbidden"
+          });
+          return;
+        }
         pedido = await this.pedidoService.findByID(id_pedido);
         const ticketDto = new TicketCreateDto();
         ticketDto.t_detalle = ticket.t_detalle;
@@ -84,14 +105,24 @@ export class TicketController {
             res.send({ticketCreado: ticketCreado});
         }
       } catch (error) {
-        console.error(error);
+        this.logger.error(error);
       }
   }
   @Get('all/:idPedido')
   async findAll(
-      @Res() res?,
-      @Param('idPedido') idPedido?
+      @Res() res,
+      @Session() session,
+      @Param('idPedido') idPedido
   ) {
+    try {
+      if(await this._rolServices.isUserType(session,['Admin','Empleado'])){
+        res.status(403).send({
+          "statusCode": 403,
+          "message": "Forbidden resource",
+          "error": "Forbidden"
+        });
+        return;
+      }
       const tickets = await this.ticketService.find({pedido_id:idPedido});
       const pedido = await this.pedidoService.findByID(idPedido);
       const usuario = await this.usuarioService.findByID(pedido.usuario_id);
@@ -102,6 +133,9 @@ export class TicketController {
       }
       console.log(tickets);
       res.send({results:completo});
+    } catch (error) {
+      this.logger.error(error);
+    }
   }
 
 }

@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Param, Patch, Post, Query, Res, ValidationPipe } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Logger, Param, Patch, Post, Query, Res, Session, ValidationPipe } from '@nestjs/common';
 import { UsuarioService } from 'src/usuario/usuario.service';
 import { PedidoCreateDto } from './dto/pedido.create.dto';
 import { Pedido} from './pedido.entity';
@@ -6,6 +6,8 @@ import { validate } from 'class-validator';
 import { PedidoService } from './pedido.service';
 import { PersonaService } from 'src/persona/persona.service';
 import { RolService } from 'src/rol/rol.service';
+import { Usuario } from 'src/usuario/usuario.entity';
+import { Persona } from 'src/persona/persona.entity';
 
 @Controller('pedido')
 export class PedidoController {
@@ -15,14 +17,25 @@ export class PedidoController {
     private readonly _personaServices:PersonaService,
     private readonly _rolServices:RolService) {}
 
+    private logger:Logger = new Logger('PedidoController');
+
 
   @Patch('update/:idPedido')
   async actualizarPedido(
     @Res() res,
     @Body('pedido') pedido:Pedido,
+    @Session() session,
     @Param('idPedido') idPedido?
   ){
     try {
+      if(await this._rolServices.isUserType(session,['Admin','Empleado'])){
+        res.status(403).send({
+          "statusCode": 403,
+          "message": "Forbidden resource",
+          "error": "Forbidden"
+        });
+        return;
+      }
       const pedidoEncontrado = await this.pedidoService.findByID(idPedido); 
       if(pedidoEncontrado==null){
         res.status(400).send({error:'No existe pedido'});
@@ -43,7 +56,7 @@ export class PedidoController {
         res.send({pedido:pedidoActualizado});
       }
     } catch (error) {
-      console.error(error);
+      this.logger.error(error);
     }
 
   }
@@ -52,10 +65,19 @@ export class PedidoController {
   async crearPedido(
       @Res() res,
       @Body('pedido') pedido:Pedido,
+      @Session() session,
       @Body('id_usuario') id_usuario?
   ) {
     let usuario;
       try {
+        if(await this._rolServices.isUserType(session,['Admin','Empleado'])){
+          res.status(403).send({
+            "statusCode": 403,
+            "message": "Forbidden resource",
+            "error": "Forbidden"
+          });
+          return;
+        }
         usuario = await this.usuarioService.findByID(id_usuario);
         if(usuario===null){
           res.status(400).send({mensaje:"Usuario no existe"});
@@ -76,26 +98,66 @@ export class PedidoController {
             res.send({pedidoCreado: pedidoCreado});
         }
       } catch (error) {
-        console.error(error);
+        this.logger.error(error);
       }
   }
 
-  @Get('all')
+  @Post('all')
   async findAll(
-      @Res() res?,
+      @Res() res,
+      @Session() session,
+      @Body() body,
       @Query('filtro') filtro?,
       @Query('input') input?,
       @Query('orden') orden?,
       @Query('estado') estado?
   ) {
     let param;
-      if(filtro=='Nombres'){
-        param = {p_nombres:{ $regex: '.*' + input + '.*' }}
-      }else if(filtro=='Cédula'){
-        param = {p_cedula:{ $regex: '.*' + input + '.*' }}
+    try {
+      let results;
+      if(await this._rolServices.isUserType(session,[])){
+        console.log('Dent');
+        res.status(403).send({
+          "statusCode": 403,
+          "message": "Forbidden resource",
+          "error": "Forbidden"
+        });
+        return;
       }
-      const results = await this.llenarDatos(param,orden,estado);
-      res.send({results:results});
+
+      if(body.usuario.rol=='Cliente'){
+        results = await this.pedidosCliente(body.usuario.username._id,body.usuario.persona);
+        console.log(results);
+        res.send({results:results})
+        return;
+      }else{
+        if(filtro=='Nombres'){
+          param = {p_nombres:{ $regex: '.*' + input + '.*' }}
+        }else if(filtro=='Cédula'){
+          param = {p_cedula:{ $regex: '.*' + input + '.*' }}
+        }
+        results = await this.llenarDatos(param,orden,estado);
+        res.send({results:results});
+      }
+    } catch (error) {
+      this.logger.error(error);
+    }
+      
+  }
+
+  async pedidosCliente(
+    id_usuario,
+    persona:Persona
+  ){
+    let results = await this.pedidoService.findByUsuarioID({usuario_id:id_usuario});
+    let completo = {
+      pedido:results,
+      p_nombres:persona.p_nombres+' '+persona.p_apellidos,
+      p_cedula:persona.p_cedula,
+      id_usuario:id_usuario,
+      p_tel:persona.p_tel
+    };
+    return [completo];
   }
 
   async llenarDatos(
@@ -111,7 +173,6 @@ export class PedidoController {
       p_cedula:"",
       id_usuario:"",
       p_tel:""
-      
     }
     personas = await this._personaServices.findAll(param);
     for(var i=0;i<personas.length;i++){
