@@ -71,6 +71,16 @@ content-type: application/json
         "rol_id":"61e7dc27aed590273949963f"
     }
 }
+
+### LogIn
+POST http://localhost:3000/users/log-cli
+content-type: application/json
+
+{
+    "identificacion":"1305412321",
+    "orden":"DDV-5AC-3S4"
+}
+
 ### ACTUALIZAR
 
 PATCH  http://localhost:3000/users/update/61e902d8996cc57b8dca918d
@@ -114,6 +124,8 @@ content-type: application/json
 ### --- PEDIDOS LISTAR
 
 GET http://localhost:3000/pedido/all?
+
+
 
 ### Crear PEDIDO
 POST http://localhost:3000/pedido/crear

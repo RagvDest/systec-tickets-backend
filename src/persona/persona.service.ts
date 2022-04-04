@@ -14,6 +14,9 @@ export class PersonaService{
     async findAll(param?):Promise<Persona[]>{
         return this.personaModel.find(param).exec();
     };
+    async findOneParam(param?):Promise<Persona>{
+        return this.personaModel.findOne(param).exec();
+    }
     async deletePerson(id:string){
         return this.personaModel.findByIdAndDelete(id).exec();
     }

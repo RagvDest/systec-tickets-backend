@@ -15,6 +15,9 @@ export class Pedido{
     @Prop()
     ped_estado:string;
 
+    @Prop()
+    ped_nro_orden:string;
+
     @Prop({type:mongoose.Schema.Types.ObjectId,ref:'Usuario'})
     usuario_id:Usuario
 }

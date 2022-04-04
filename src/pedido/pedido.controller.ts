@@ -69,6 +69,9 @@ export class PedidoController {
       @Body('id_usuario') id_usuario?
   ) {
     let usuario;
+    let numTicket = Math.random().toString(36).substring(2, 5)+"-"+
+                    Math.random().toString(36).substring(2, 5)+"-"+
+                    Math.random().toString(36).substring(2, 5);
       try {
         if(await this._rolServices.isUserType(session,['Admin','Empleado'])){
           res.status(403).send({
@@ -88,6 +91,7 @@ export class PedidoController {
         pedidoDto.usuario_id = usuario;
         pedido.usuario_id = usuario;
         pedido.ped_estado="ABIERTO";
+        pedido.ped_nro_orden = numTicket.toUpperCase();
 
         const errores = await validate(pedidoDto);
         if(errores.length>0){
@@ -149,7 +153,7 @@ export class PedidoController {
     id_usuario,
     persona:Persona
   ){
-    let results = await this.pedidoService.findByUsuarioID({usuario_id:id_usuario});
+    let results = await this.pedidoService.findByParam({usuario_id:id_usuario});
     let completo = {
       pedido:results,
       p_nombres:persona.p_nombres+' '+persona.p_apellidos,

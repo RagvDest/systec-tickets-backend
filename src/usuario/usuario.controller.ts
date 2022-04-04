@@ -9,6 +9,8 @@ import { PersonaService } from 'src/persona/persona.service';
 import { RolService } from 'src/rol/rol.service';
 import { UsuarioUpdateDto } from './dto/usuario.update.dto';
 import { PersonaUpdateDto } from 'src/persona/dto/persona.update.dto';
+import { identity } from 'rxjs';
+import { PedidoService } from 'src/pedido/pedido.service';
 
 const bcrypt = require('bcryptjs');
 const saltRounds = 10;
@@ -18,7 +20,8 @@ export class UsuarioController{
     constructor(
         private readonly _usuarioServices:UsuarioService,
         private readonly _personaServices:PersonaService,
-        private readonly _rolServices:RolService
+        private readonly _rolServices:RolService,
+        private readonly _pedidoServices:PedidoService
     ){}
 
     private logger:Logger = new Logger('UsuarioController');
@@ -55,6 +58,47 @@ export class UsuarioController{
             res.status(200).send({usuarioActualizado,mensaje:"Contraseña guardada"});
         } catch (error) {
             this.logger.error(error)
+        }
+    }
+    
+    @Post('log-cli')
+    async loginCustomers(
+        @Res() res,
+        @Body('identificacion') ident,
+        @Body('orden') orden,
+        @Session() session
+    ){
+        try {
+            let persona = await this._personaServices.findOneParam({p_cedula:ident});
+            let usuario = await this._usuarioServices.findByPersonaID({persona_id:persona});
+            let pedidos = await this._pedidoServices.find({usuario_id:usuario,ped_nro_orden:orden});
+            
+            if(pedidos.length<1){
+                res.send(null);
+                return;
+            }
+
+            let usuarioSession = {
+                _id:usuario["_id"],
+                persona_id:usuario.persona_id,
+                u_mail:usuario.u_mail,
+                u_activo:usuario.u_activo,
+                u_usuario:usuario.u_usuario
+            };
+            session.usuario = usuarioSession;
+            let rol = await this._rolServices.findByID(usuario.rol_id);
+            session.rol = rol;
+            res.send({
+                userLog:{
+                    usuario:session.usuario,
+                    rol:session.rol.r_rol, 
+                    persona:persona
+                },
+                pedidos:pedidos
+            });
+
+        } catch (error) {
+            console.log(error);
         }
     }
 
