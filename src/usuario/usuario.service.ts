@@ -32,6 +32,18 @@ export class UsuarioService{
 
     async findByPersonaID(param?):Promise<Usuario>{
         return this.usuarioModel.findOne(param).exec();
+    }
 
+    fcConvert = (fc) =>{
+        let day = fc.getDate()<10 ? "0"+fc.getDate() : fc.getDate();
+        let hours = fc.getHours()<10 ? "0"+fc.getHours() : fc.getHours();
+        let minutes = fc.getMinutes()<10 ? "0"+fc.getMinutes() : fc.getMinutes();
+        let seconds = fc.getSeconds()<10 ? "0"+fc.getSeconds() :fc.getSeconds();
+        let time = hours+":"+minutes+":"+seconds;
+        if(fc.getMonth()<9){
+            return (day+"/"+"0"+(parseInt(fc.getMonth())+1)+"/"+fc.getFullYear()+" "+time)
+        }else{
+            return (day+"/"+fc.getMonth()+1+"/"+fc.getFullYear()+" "+time)
+        }
     }
 }

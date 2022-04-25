@@ -16,6 +16,7 @@ async function bootstrap() {
     credentials: true
   }));
 
+
   app.use(
     session({
       name: 'server-session-id',
@@ -23,6 +24,7 @@ async function bootstrap() {
       resave: false,
       saveUninitialized: false,
       cookie: {
+        sameSite: true,
         secure: false
       },
       store: new FileStore()

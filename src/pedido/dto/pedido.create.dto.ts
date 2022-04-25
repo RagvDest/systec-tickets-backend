@@ -8,5 +8,13 @@ export class PedidoCreateDto{
     ped_fc_registro:Date
 
     @IsNotEmpty()
+    @IsString()
+    ped_nro_orden:string
+
+    @IsNotEmpty()
+    @IsString()
+    ped_estado:string
+
+    @IsNotEmpty()
     usuario_id:Usuario
 }

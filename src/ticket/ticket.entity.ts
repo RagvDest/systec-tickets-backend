@@ -26,6 +26,9 @@ export class Ticket{
     @Prop({required:true})
     t_estado:string;
 
+    @Prop()
+    t_re_abierto:boolean;
+
     @Prop({type:mongoose.Schema.Types.ObjectId,ref:'Estado'})
     estado_id:Estado;
 

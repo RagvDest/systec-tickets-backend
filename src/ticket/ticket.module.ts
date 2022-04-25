@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Estado, EstadoSchema } from 'src/estado/estado.entity';
 import { EstadoService } from 'src/estado/estado.service';
+import { Notificacion, NotificacionSchema } from 'src/notificacion/notificacion.entity';
+import { NotificacionService } from 'src/notificacion/notificacion.service';
 import { Pedido, PedidoSchema } from 'src/pedido/pedido.entity';
 import { PedidoService } from 'src/pedido/pedido.service';
 import { Persona, PersonaSchema } from 'src/persona/persona.entity';
@@ -22,7 +24,8 @@ import { TicketService } from './ticket.service';
             {name:Estado.name, schema:EstadoSchema},
             {name:Usuario.name, schema:UsuarioSchema},
             {name:Persona.name, schema:PersonaSchema},
-            {name:Rol.name, schema:RolSchema}
+            {name:Rol.name, schema:RolSchema},
+            {name:Notificacion.name,schema:NotificacionSchema}
 
         ])],
     controllers:[TicketController],
@@ -32,7 +35,8 @@ import { TicketService } from './ticket.service';
         EstadoService, 
         UsuarioService, 
         PersonaService,
-        RolService
+        RolService,
+        NotificacionService
     ]
 })
 export class TicketModule {}

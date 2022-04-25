@@ -11,7 +11,7 @@ export class TicketService{
         return this.ticketModel.find(param).exec();
     }
     async findByID(id?):Promise<Ticket>{
-        return this.ticketModel.findById(id).exec();
+        return this.ticketModel.findById(id).populate('pedido_id').exec();
     }
     async create(newTicket:Ticket):Promise<Ticket>{
         const ticketCreado = new this.ticketModel(newTicket);
@@ -20,10 +20,17 @@ export class TicketService{
     async updateByID(ticket_id?,query?):Promise<Ticket>{
         return this.ticketModel.findByIdAndUpdate(ticket_id,query,{upsert:false});
     }
-    async findByPedidoID(param?):Promise<Ticket>{
-        return this.ticketModel.findOne(param).exec();
+    async findByPedidoID(param?):Promise<Ticket[]>{
+        return this.ticketModel.find(param).exec();
     }
     async updateEstado(ticket_id:string,estado:string):Promise<Ticket>{
-        return this.ticketModel.findByIdAndUpdate(ticket_id,{t_estado:estado});
+        return (await this.ticketModel.findByIdAndUpdate(ticket_id,{t_estado:estado}).populate('pedido_id'));
+    }
+    async cerrarTicketsByPedidoID(pedido_id){
+        let tickets = this.ticketModel.updateMany({pedido_id:pedido_id},{$set:{t_estado:'CERRADO'}});
+        return tickets;
+    }
+    async countTickets(param):Promise<number>{
+        return this.ticketModel.countDocuments(param).exec();
     }
 }

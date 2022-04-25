@@ -30,6 +30,7 @@
     "@nestjsi/class-validator": "^0.1.4",
     "bcrypt": "^5.0.1",
     "bcryptjs": "^2.4.3",
+    "capitalize": "^2.0.4",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "express": "^4.17.3",

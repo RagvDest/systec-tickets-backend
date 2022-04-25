@@ -10,6 +10,7 @@ import { PedidoModule } from './pedido/pedido.module';
 import { TicketService } from './ticket/ticket.service';
 import { TicketModule } from './ticket/ticket.module';
 import { AppGateway } from './app.gateway';
+import { NotificacionModule } from './notificacion/notificacion.module';
 
 @Module({
   imports: [
@@ -20,7 +21,8 @@ import { AppGateway } from './app.gateway';
     UsuarioModule,
     PedidoModule,
     TicketModule,
-    EstadoModule
+    EstadoModule,
+    NotificacionModule
   ],
   controllers: [AppController],
   providers: [AppService, AppGateway],

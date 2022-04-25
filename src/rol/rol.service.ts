@@ -22,8 +22,6 @@ export class RolService{
     }
 
     async isUserType(session,user_type){
-        //Eliminar, solo para usar API en DV
-        return false;
         if(!session.rol){
             return true;
         }

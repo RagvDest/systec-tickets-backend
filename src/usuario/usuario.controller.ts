@@ -9,9 +9,9 @@ import { PersonaService } from 'src/persona/persona.service';
 import { RolService } from 'src/rol/rol.service';
 import { UsuarioUpdateDto } from './dto/usuario.update.dto';
 import { PersonaUpdateDto } from 'src/persona/dto/persona.update.dto';
-import { identity } from 'rxjs';
 import { PedidoService } from 'src/pedido/pedido.service';
 
+var capitalize = require('capitalize')
 const bcrypt = require('bcryptjs');
 const saltRounds = 10;
 
@@ -69,14 +69,32 @@ export class UsuarioController{
         @Session() session
     ){
         try {
-            let persona = await this._personaServices.findOneParam({p_cedula:ident});
-            let usuario = await this._usuarioServices.findByPersonaID({persona_id:persona});
-            let pedidos = await this._pedidoServices.find({usuario_id:usuario,ped_nro_orden:orden});
-            
-            if(pedidos.length<1){
-                res.send(null);
+            let persona = await this._personaServices
+                .findOneParam({p_cedula:ident});
+            let usuario = await this._usuarioServices
+                .findByPersonaID({persona_id:persona});
+                
+            if(usuario==null){
+                res.send({mensaje:"Usuario no existe"});
                 return;
             }
+            let rol = await this._rolServices.findByID(usuario.rol_id);
+            if (rol.r_rol=="Empleado"){
+                res.send({mensaje:"Ingrese como empleado"});
+                return;
+            }
+            let pedidos = await this._pedidoServices.find({usuario_id:usuario,ped_nro_orden:orden});
+            
+
+            if(pedidos.length<1){
+                res.send({pedidos:[]});
+                return;
+            }
+            if(pedidos[0].ped_estado=="CERRADO"){
+                res.send({mensaje:"PEDIDO CERRADO: "+this._usuarioServices.fcConvert(pedidos[0].ped_fc_fin)});
+                return;
+            }
+            this.logger.debug("Nada");
 
             let usuarioSession = {
                 _id:usuario["_id"],
@@ -85,12 +103,13 @@ export class UsuarioController{
                 u_activo:usuario.u_activo,
                 u_usuario:usuario.u_usuario
             };
+
             session.usuario = usuarioSession;
-            let rol = await this._rolServices.findByID(usuario.rol_id);
             session.rol = rol;
+            session.codPedido = orden;
             res.send({
-                userLog:{
-                    usuario:session.usuario,
+                user:{
+                    username:session.usuario,
                     rol:session.rol.r_rol, 
                     persona:persona
                 },
@@ -98,7 +117,7 @@ export class UsuarioController{
             });
 
         } catch (error) {
-            console.log(error);
+            this.logger.error(error);
         }
     }
 
@@ -152,7 +171,8 @@ export class UsuarioController{
         @Query('input') input?,
         @Query('op') op?,
     ){
-        console.log(session);
+        input = input != null ? input.toLowerCase():'';
+        console.log(session.rol);
         if(await this._rolServices.isUserType(session,['Admin','Empleado'])){
             console.log("Dentro");
             res.status(403).send({
@@ -242,6 +262,8 @@ export class UsuarioController{
               }
             id_persona = await this.crearPersona(res,persona);
             usuario.persona_id = id_persona;
+            usuario.u_usuario = usuario.u_usuario.toLowerCase();
+            usuario.u_mail = usuario.u_mail.toLowerCase();
 
             const rol_id = await this._rolServices.findByID(rol);
             usuario.rol_id = rol_id;
@@ -360,10 +382,15 @@ export class UsuarioController{
         @Res() res,
         persona:Persona
     ){
+        persona.p_nombres=persona.p_nombres.toLowerCase();
+        persona.p_apellidos=persona.p_apellidos.toLowerCase();
+
         const person = new PersonaCreateDto();
         person.p_nombres = persona.p_nombres;
         person.p_apellidos = persona.p_apellidos;
         person.p_cedula = persona.p_cedula;
+
+        
         try {
             const errores = await validate(person);
 
@@ -399,6 +426,9 @@ export class UsuarioController{
                     persona:{}
                 };
                 persona = await this._personaServices.findByID(usuarios[i].persona_id);
+                usuarios[i].u_usuario=capitalize.words(usuarios[i].u_usuario);
+                persona.p_apellidos = capitalize.words(persona.p_apellidos);
+                persona.p_nombres = capitalize.words(persona.p_nombres);
                 completo.username = usuarios[i];
                 completo.persona = persona;
                 results.push(completo);
@@ -411,6 +441,9 @@ export class UsuarioController{
                     persona:{}
                 };
                 usuario = await this._usuarioServices.findByPersonaID({persona_id:personas[i]._id});
+                usuario.u_usuario=capitalize.words(usuario.u_usuario);
+                personas[i].p_apellidos = capitalize.words(personas[i].p_apellidos);
+                personas[i].p_nombres = capitalize.words(personas[i].p_nombres);
                 completo.username = usuario;
                 completo.persona = personas[i];
                 results.push(completo);

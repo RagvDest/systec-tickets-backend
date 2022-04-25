@@ -1,5 +1,7 @@
 import { Body, Controller, Get, HttpException, Param, Patch, Post, Res, Session } from "@nestjs/common";
 import { validate } from 'class-validator';
+import { Notificacion } from "src/notificacion/notificacion.entity";
+import { NotificacionService } from "src/notificacion/notificacion.service";
 import { RolService } from "src/rol/rol.service";
 import { TicketService } from "src/ticket/ticket.service";
 import { Comentario } from "./comentario.entity";
@@ -13,7 +15,8 @@ export class EstadoController {
   constructor(
     private readonly ticketService: TicketService,
     private readonly estadoService: EstadoService,
-    private readonly rolService:RolService) {}
+    private readonly rolService:RolService,
+    private readonly notiService:NotificacionService) {}
 
     @Post('crear')
     async crearEstado(
@@ -60,6 +63,17 @@ export class EstadoController {
             const estadoCreado = await this.estadoService.create(estado);
             const ticketAc = await this.ticketService.updateEstado(ticket["_id"],estado.e_nombre);
             ticketAc.t_estado = estado.e_nombre;
+
+            let notifi = new Notificacion();
+            notifi.n_documento = "Ticket";
+            notifi.n_codigo = ticketAc.t_num;
+            notifi.n_fc_creado = new Date();
+            notifi.n_new = true;
+            notifi.n_tipo = "Avance";
+            notifi.usuario_id = ticketAc.pedido_id.usuario_id;
+
+            let notifiCreada = await this.notiService.create(notifi);
+
             res.send({estado:estadoCreado,ticket:ticketAc});
         } catch (error) {
             console.error(error);
@@ -86,7 +100,7 @@ export class EstadoController {
             let estado = estadoEncontrado;
             if(estado==null){
                 res.status(400).send({error:'Estado no existe'});
-                throw new Error('Ticket no encontrado');
+                throw new Error('Estado no encontrado');
             }
             const estadoDto = new EstadoUpdateDto();
             estadoDto.e_nombre = estado.e_nombre;
@@ -105,6 +119,9 @@ export class EstadoController {
                 throw new Error('Errores en validación');
             }
             const estadoActualizado = await this.estadoService.updateByID(estadoEncontrado['_id'],estado);
+
+            await this.notifiComentario(session.rol,estado.user_id,estado.ticket_id);
+
             res.send({estado:estadoActualizado, comentario:comentario});            
         } catch (error) {
             
@@ -156,6 +173,19 @@ export class EstadoController {
             res.send(comentarios);
         } catch (error) {
             console.error(error);
+        }
+    }
+
+    async notifiComentario(
+        rol,
+        id_tec,
+        idTicket
+    ){
+        let ticket = await this.ticketService.findByID(idTicket);
+        if(rol.r_rol=='Cliente'){
+            await this.notiService.generateNotifi("Ticket",ticket.t_num,"Comentario",id_tec);
+        }else{
+            await this.notiService.generateNotifi("Ticket",ticket.t_num,"Comentario",ticket.pedido_id.usuario_id);
         }
     }
 

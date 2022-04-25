@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Logger, Param, Patch, Post, Res, Session, ValidationPipe } from '@nestjs/common';
+import { BadRequestException, Body, Controller, ForbiddenException, Get, Logger, Param, Patch, Post, Res, Session, ValidationPipe } from '@nestjs/common';
 import { Ticket} from './ticket.entity';
 import { validate } from 'class-validator';
 import { TicketService } from './ticket.service';
@@ -8,6 +8,7 @@ import { UsuarioService } from 'src/usuario/usuario.service';
 import { PersonaService } from 'src/persona/persona.service';
 import { TicketCreateDto } from './dto/ticket.create.dto';
 import { RolService } from 'src/rol/rol.service';
+import { NotificacionService } from 'src/notificacion/notificacion.service';
 
 @Controller('ticket')
 export class TicketController {
@@ -16,9 +17,10 @@ export class TicketController {
     private readonly pedidoService: PedidoService,
     private readonly usuarioService: UsuarioService,
     private readonly personaService: PersonaService,
-    private readonly _rolServices:RolService){}
+    private readonly _rolServices:RolService,
+    private readonly notifiService:NotificacionService){}
 
-    private logger:Logger = new Logger('PersonaController');
+    private logger:Logger = new Logger('TicketController');
 
   @Patch('update/:idTicket')
   async actualizarTicket(
@@ -76,14 +78,22 @@ export class TicketController {
                     Math.random().toString(36).substring(2, 5);
       try {
         if(await this._rolServices.isUserType(session,['Admin','Empleado'])){
-          res.status(403).send({
-            "statusCode": 403,
-            "message": "Forbidden resource",
-            "error": "Forbidden"
-          });
-          return;
+          throw new ForbiddenException('Forbidden resource');
         }
         pedido = await this.pedidoService.findByID(id_pedido);
+
+        if(ticket.t_re_abierto){
+          let ticketAntiguo = await this.ticketService.findByPedidoID({t_num:ticket.t_detalle});
+          if(ticketAntiguo.length<1){
+            throw new BadRequestException('Ticket no existe');
+          }else{
+            if(ticketAntiguo[0].t_estado!="CERRADO"){
+              throw new BadRequestException('Ticket ACTIVO');
+            }
+            ticket.t_detalle="Ticket REABIERTO: "+ticket.t_detalle;
+          }
+        }
+
         const ticketDto = new TicketCreateDto();
         ticketDto.t_detalle = ticket.t_detalle;
         ticketDto.t_total = ticket.t_total;
@@ -100,12 +110,17 @@ export class TicketController {
           console.error(errores);
           res.send({errores:errores});
         }else{
+
           console.log("Ticket creado: "+ticket.t_num+" - Pedido: "+id_pedido);
             const ticketCreado = await this.ticketService.create(ticket);
+
+            await this.notifiService.generateNotifi("Pedido",pedido.ped_nro_orden,"Nuevo Ticket",pedido.usuario_id);
+
             res.send({ticketCreado: ticketCreado});
         }
       } catch (error) {
         this.logger.error(error);
+        res.status(error.status).send(error.response);
       }
   }
   @Get('all/:idPedido')
@@ -115,7 +130,7 @@ export class TicketController {
       @Param('idPedido') idPedido
   ) {
     try {
-      if(await this._rolServices.isUserType(session,['Admin','Empleado'])){
+      if(await this._rolServices.isUserType(session,['Admin','Empleado','Cliente'])){
         res.status(403).send({
           "statusCode": 403,
           "message": "Forbidden resource",

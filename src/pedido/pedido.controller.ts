@@ -8,6 +8,11 @@ import { PersonaService } from 'src/persona/persona.service';
 import { RolService } from 'src/rol/rol.service';
 import { Usuario } from 'src/usuario/usuario.entity';
 import { Persona } from 'src/persona/persona.entity';
+import { TicketService } from 'src/ticket/ticket.service';
+import { EstadoService } from 'src/estado/estado.service';
+import { Ticket } from 'src/ticket/ticket.entity';
+var capitalize = require('capitalize')
+
 
 @Controller('pedido')
 export class PedidoController {
@@ -15,6 +20,8 @@ export class PedidoController {
     private readonly pedidoService: PedidoService,
     private readonly usuarioService: UsuarioService,
     private readonly _personaServices:PersonaService,
+    private readonly _ticketServices:TicketService,
+    private readonly _estadoServices:EstadoService,
     private readonly _rolServices:RolService) {}
 
     private logger:Logger = new Logger('PedidoController');
@@ -28,14 +35,14 @@ export class PedidoController {
     @Param('idPedido') idPedido?
   ){
     try {
-      if(await this._rolServices.isUserType(session,['Admin','Empleado'])){
+      /*if(await this._rolServices.isUserType(session,['Admin','Empleado'])){
         res.status(403).send({
           "statusCode": 403,
           "message": "Forbidden resource",
           "error": "Forbidden"
         });
         return;
-      }
+      }*/
       const pedidoEncontrado = await this.pedidoService.findByID(idPedido); 
       if(pedidoEncontrado==null){
         res.status(400).send({error:'No existe pedido'});
@@ -44,6 +51,8 @@ export class PedidoController {
 
       const ped = new PedidoCreateDto();
       ped.ped_fc_registro = new Date(pedido.ped_fc_registro);
+      ped.ped_nro_orden = pedido.ped_nro_orden;
+      ped.ped_estado = pedido.ped_estado;
       ped.usuario_id = pedidoEncontrado.usuario_id;
 
       const errores = await validate(ped);
@@ -51,9 +60,13 @@ export class PedidoController {
         console.error(errores);
         res.send({errores:errores});
       }else{
-        console.log(pedidoEncontrado["_id"]);
+        let tickets:Ticket[];
+        if(pedido.ped_estado=='CERRADO'){
+          await this.crearEstadoCerrado(pedido,tickets,idPedido);
+        }
+          
         const pedidoActualizado = await this.pedidoService.updateByID(pedidoEncontrado['_id'],pedido);
-        res.send({pedido:pedidoActualizado});
+        res.send({pedido:Object.assign(pedidoActualizado,pedido),tickets:tickets});
       }
     } catch (error) {
       this.logger.error(error);
@@ -86,12 +99,16 @@ export class PedidoController {
           res.status(400).send({mensaje:"Usuario no existe"});
           throw new BadRequestException('Usuario no existe');
         }
+        pedido.ped_estado="ABIERTO";
+        pedido.ped_nro_orden = numTicket.toUpperCase();
+
         const pedidoDto = new PedidoCreateDto();
         pedidoDto.ped_fc_registro = new Date(pedido.ped_fc_registro);
         pedidoDto.usuario_id = usuario;
+        pedidoDto.ped_estado = pedido.ped_estado;
+        pedidoDto.ped_nro_orden = pedido.ped_nro_orden;
         pedido.usuario_id = usuario;
-        pedido.ped_estado="ABIERTO";
-        pedido.ped_nro_orden = numTicket.toUpperCase();
+        
 
         const errores = await validate(pedidoDto);
         if(errores.length>0){
@@ -119,7 +136,7 @@ export class PedidoController {
     let param;
     try {
       let results;
-      if(await this._rolServices.isUserType(session,[])){
+     /* if(await this._rolServices.isUserType(session,[])){
         console.log('Dent');
         res.status(403).send({
           "statusCode": 403,
@@ -127,20 +144,24 @@ export class PedidoController {
           "error": "Forbidden"
         });
         return;
-      }
-
-      if(body.usuario.rol=='Cliente'){
-        results = await this.pedidosCliente(body.usuario.username._id,body.usuario.persona);
-        console.log(results);
+      }*/
+      console.log(JSON.stringify(body));
+      if(body.usuario && body.usuario.rol=='Cliente'){
+        results = await this.pedidosCliente(body.usuario.username._id,body.usuario.persona,session.codPedido);
+        this.logger.debug("Cargando pedidos del cliente");
         res.send({results:results})
         return;
       }else{
+        input = input == null ? '' : input.toLowerCase();
         if(filtro=='Nombres'){
           param = {p_nombres:{ $regex: '.*' + input + '.*' }}
         }else if(filtro=='Cédula'){
           param = {p_cedula:{ $regex: '.*' + input + '.*' }}
         }
         results = await this.llenarDatos(param,orden,estado);
+        
+        
+
         res.send({results:results});
       }
     } catch (error) {
@@ -149,13 +170,43 @@ export class PedidoController {
       
   }
 
+  async crearEstadoCerrado(
+    pedido:Pedido,
+    tickets:Ticket[],
+    idPedido:string
+  ){
+    
+    pedido.ped_fc_fin = new Date();
+    let updated = await this._ticketServices.cerrarTicketsByPedidoID(idPedido);
+    tickets = await this._ticketServices.findByPedidoID({pedido_id:idPedido});
+    let estados = [];
+    for(let i=0;i<tickets.length;i++){
+      let ticket = tickets[i];
+      let param = {ticket_id:ticket['_id']};
+      let lastEstado = await this._estadoServices.findLast(param);
+      let estado = {
+        e_nombre:"CERRADO",
+        e_detalle:"PEDIDO CERRADO",
+        e_usuario:"Sistema",
+        e_secuencial:lastEstado==null ? 0 : lastEstado.e_secuencial+1,
+        user_id: null,
+        ticket_id:ticket['_id']
+      }
+      estados.push(estado);
+    };
+    estados.forEach(async (it)=>{
+      await this._estadoServices.create(it);
+    })
+  }
+
   async pedidosCliente(
     id_usuario,
-    persona:Persona
+    persona:Persona,
+    codPedido
   ){
-    let results = await this.pedidoService.findByParam({usuario_id:id_usuario});
+    let results = await this.pedidoService.find({usuario_id:id_usuario,ped_nro_orden:codPedido});
     let completo = {
-      pedido:results,
+      pedido:results[0],
       p_nombres:persona.p_nombres+' '+persona.p_apellidos,
       p_cedula:persona.p_cedula,
       id_usuario:id_usuario,
@@ -172,7 +223,7 @@ export class PedidoController {
     let results = [];
     let personas, usuario, pedidos;
     let completo = {
-      pedido:{},
+      pedido:{nTickets:0},
       p_nombres:"",
       p_cedula:"",
       id_usuario:"",
@@ -180,13 +231,7 @@ export class PedidoController {
     }
     personas = await this._personaServices.findAll(param);
     for(var i=0;i<personas.length;i++){
-      completo = {
-        pedido:{},
-        p_nombres:"",
-        p_cedula:"",
-        id_usuario:"",
-        p_tel:""
-      };
+      
       usuario = await this.usuarioService.findByPersonaID({persona_id:personas[i]._id});
       let query;
       if(estado==="TODOS" || estado==="" || estado==null)
@@ -194,18 +239,39 @@ export class PedidoController {
       else
         query = {usuario_id:usuario['_id'], ped_estado:estado};
       pedidos = await this.pedidoService.find(query,orden);
-      
+
       for(var u=0;u<pedidos.length;u++){
-        console.log(u);
+        completo = {
+          pedido:{
+            nTickets:0
+          },
+          p_nombres:"",
+          p_cedula:"",
+          id_usuario:"",
+          p_tel:""
+        };
         completo.pedido = pedidos[u];
-        completo.p_nombres = personas[i].p_nombres+" "+personas[i].p_apellidos;
+        completo.pedido.nTickets = await this._ticketServices.countTickets({pedido_id:pedidos[u]._id});
+        completo.p_nombres = capitalize.words(personas[i].p_nombres+" "+personas[i].p_apellidos);
         completo.p_cedula = personas[i].p_cedula;
         completo.id_usuario = usuario['_id'];
         completo.p_tel = personas[i].p_tel;
         results.push(completo);
       }
     }
+    if(orden=="asc"){
+      results.sort(this.sortAsc);
+    }else{
+      results.sort(this.sortDesc);
+    }
     return results;
+  }
+
+  sortDesc(a,b){
+    return new Date(a.pedido.ped_fc_fin).getTime()-new Date(b.pedido.ped_fc_fin).getTime();
+  }
+  sortAsc(a,b){
+    return new Date(b.pedido.ped_fc_fin).getTime()-new Date(a.pedido.ped_fc_fin).getTime();
   }
 
 }
