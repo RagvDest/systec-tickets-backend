@@ -1,5 +1,6 @@
 import { Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
+import { AppGateway } from "src/app.gateway";
 import { Rol, RolSchema } from "src/rol/rol.entity";
 import { RolService } from "src/rol/rol.service";
 import { NotificacionController } from "./notificacion.controller";

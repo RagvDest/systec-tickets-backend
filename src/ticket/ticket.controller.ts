@@ -29,7 +29,6 @@ export class TicketController {
     @Session() session,
     @Param('idTicket') idTicket?
   ){
-    console.log(JSON.stringify(idTicket));
     try {
       if(await this._rolServices.isUserType(session,['Admin','Empleado'])){
         res.status(403).send({
@@ -56,9 +55,14 @@ export class TicketController {
       if(errores.length>0){
         console.error(errores);
         res.send({errores:errores});
+        return ;
+      }else{
+        let pedido = await this.pedidoService.findByID(ticket.pedido_id);
+
+        const ticketActualizado = await this.ticketService.updateByID(ticketEncontrado['_id'],ticket);
+
+        res.send({ticket:Object.assign(ticketActualizado,ticket)});
       }
-      const ticketActualizado = await this.ticketService.updateByID(ticketEncontrado['_id'],ticket);
-      res.send({ticket:Object.assign(ticketActualizado,ticket)});
     } catch (error) {
       this.logger.error(error);
     }
@@ -77,7 +81,7 @@ export class TicketController {
                     Math.random().toString(36).substring(2, 5)+"-"+
                     Math.random().toString(36).substring(2, 5);
       try {
-        if(await this._rolServices.isUserType(session,['Admin','Empleado'])){
+        if(await !this._rolServices.isUserType(session,['Admin','Empleado'])){
           throw new ForbiddenException('Forbidden resource');
         }
         pedido = await this.pedidoService.findByID(id_pedido);
@@ -114,9 +118,11 @@ export class TicketController {
           console.log("Ticket creado: "+ticket.t_num+" - Pedido: "+id_pedido);
             const ticketCreado = await this.ticketService.create(ticket);
 
-            await this.notifiService.generateNotifi("Pedido",pedido.ped_nro_orden,"Nuevo Ticket",pedido.usuario_id);
+            let notifi = await this.notifiService.generateNotifi(
+              "Pedido",pedido.ped_nro_orden,
+              "Nuevo Ticket",pedido.usuario_id._id,ticket.pedido_id);
 
-            res.send({ticketCreado: ticketCreado});
+            res.send({ticketCreado: ticketCreado,notificacion:notifi});
         }
       } catch (error) {
         this.logger.error(error);
@@ -130,7 +136,7 @@ export class TicketController {
       @Param('idPedido') idPedido
   ) {
     try {
-      if(await this._rolServices.isUserType(session,['Admin','Empleado','Cliente'])){
+      if(await !this._rolServices.isUserType(session,['Admin','Empleado','Cliente'])){
         res.status(403).send({
           "statusCode": 403,
           "message": "Forbidden resource",
@@ -143,10 +149,9 @@ export class TicketController {
       const usuario = await this.usuarioService.findByID(pedido.usuario_id);
       const persona = await this.personaService.findByID(usuario.persona_id);
       const completo ={
-        tickets:tickets,
+        tickets:tickets.reverse(),
         p_nombres:persona.p_nombres+" "+persona.p_apellidos
       }
-      console.log(tickets);
       res.send({results:completo});
     } catch (error) {
       this.logger.error(error);

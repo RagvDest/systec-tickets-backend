@@ -15,7 +15,7 @@ export class NotificacionService{
         return noti.save();
     }
 
-    async generateNotifi(docu,cod,tipo,userId){
+    async generateNotifi(docu,cod,tipo,userId,pedido){
         let notifi = new Notificacion();
             notifi.n_documento = docu;
             notifi.n_codigo = cod;
@@ -23,7 +23,8 @@ export class NotificacionService{
             notifi.n_new = true;
             notifi.n_tipo = tipo;
             notifi.usuario_id = userId;
+            notifi.pedido_id=pedido;
 
-            let notifiCreada = await this.create(notifi);
+            return await this.create(notifi);
     }
 }

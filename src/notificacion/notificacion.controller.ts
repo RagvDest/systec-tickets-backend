@@ -1,4 +1,5 @@
 import { Controller, Get, Logger, Res, Session } from "@nestjs/common";
+import { AppGateway } from "src/app.gateway";
 import { RolService } from "src/rol/rol.service";
 import { NotificacionService } from "./notificacion.service";
 

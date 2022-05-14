@@ -27,7 +27,8 @@ export class EstadoController {
     ){
         let ticket;
         try {
-            if(await this.rolService.isUserType(session,['Admin','Empleado'])){
+            console.log(session);
+            if(await !this.rolService.isUserType(session,['Admin','Empleado'])){
                 res.status(403).send({
                   "statusCode": 403,
                   "message": "Forbidden resource",
@@ -64,17 +65,12 @@ export class EstadoController {
             const ticketAc = await this.ticketService.updateEstado(ticket["_id"],estado.e_nombre);
             ticketAc.t_estado = estado.e_nombre;
 
-            let notifi = new Notificacion();
-            notifi.n_documento = "Ticket";
-            notifi.n_codigo = ticketAc.t_num;
-            notifi.n_fc_creado = new Date();
-            notifi.n_new = true;
-            notifi.n_tipo = "Avance";
-            notifi.usuario_id = ticketAc.pedido_id.usuario_id;
+            let notifiCreada = await this.notiService.generateNotifi(
+                "Ticket",ticketAc.t_num,
+                "Avance",ticketAc.pedido_id.usuario_id,
+                ticketAc.pedido_id);
 
-            let notifiCreada = await this.notiService.create(notifi);
-
-            res.send({estado:estadoCreado,ticket:ticketAc});
+            res.send({estado:estadoCreado,ticket:ticketAc,notificacion:notifiCreada});
         } catch (error) {
             console.error(error);
         } 
@@ -88,7 +84,8 @@ export class EstadoController {
         @Session() session
     ){
         try {
-            if(await this.rolService.isUserType(session,[])){
+            console.log(session);
+            if(await !this.rolService.isUserType(session,[])){
                 res.status(403).send({
                   "statusCode": 403,
                   "message": "Forbidden resource",
@@ -120,11 +117,13 @@ export class EstadoController {
             }
             const estadoActualizado = await this.estadoService.updateByID(estadoEncontrado['_id'],estado);
 
-            await this.notifiComentario(session.rol,estado.user_id,estado.ticket_id);
+            let notifi = await this.notifiComentario(
+                session.rol,estado.user_id,
+                estado.ticket_id,estadoEncontrado.ticket_id.pedido_id);
 
-            res.send({estado:estadoActualizado, comentario:comentario});            
+            res.send({estado:estadoActualizado, comentario:comentario,notificacion:notifi});            
         } catch (error) {
-            
+            console.error("Error: "+error);
         }
     }
 
@@ -135,7 +134,7 @@ export class EstadoController {
         @Session() session
     ){
         try {
-            if(await this.rolService.isUserType(session,[])){
+            if(await !this.rolService.isUserType(session,[])){
                 res.status(403).send({
                   "statusCode": 403,
                   "message": "Forbidden resource",
@@ -179,13 +178,14 @@ export class EstadoController {
     async notifiComentario(
         rol,
         id_tec,
-        idTicket
+        idTicket,
+        pedido
     ){
         let ticket = await this.ticketService.findByID(idTicket);
         if(rol.r_rol=='Cliente'){
-            await this.notiService.generateNotifi("Ticket",ticket.t_num,"Comentario",id_tec);
+            return await this.notiService.generateNotifi("Ticket",ticket.t_num,"Comentario",id_tec,pedido);
         }else{
-            await this.notiService.generateNotifi("Ticket",ticket.t_num,"Comentario",ticket.pedido_id.usuario_id);
+            return await this.notiService.generateNotifi("Ticket",ticket.t_num,"Comentario",ticket.pedido_id.usuario_id,pedido);
         }
     }
 

@@ -11,7 +11,7 @@ export class EstadoService{
         return this.estadoModel.find(param).exec();
     }
     async findByID(id?):Promise<Estado>{
-        return this.estadoModel.findById(id).exec();
+        return this.estadoModel.findById(id).populate({path:'ticket_id'}).exec();
     }
     async findLast(param?):Promise<Estado>{
         return this.estadoModel.findOne(param).sort({e_secuencial:-1}).exec();

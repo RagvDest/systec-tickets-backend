@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import * as mongoose from 'mongoose';
+import { Pedido } from "src/pedido/pedido.entity";
 import { Usuario } from "src/usuario/usuario.entity";
 
 export type NotificacionDocument = Notificacion & Document
@@ -20,6 +21,9 @@ export class Notificacion{
 
     @Prop({required:true})
     n_fc_creado:Date
+
+    @Prop({type:mongoose.Schema.Types.ObjectId,ref:'Pedido'})
+    pedido_id:Pedido
 
     @Prop({type:mongoose.Schema.Types.ObjectId,ref:'Usuario'})
     usuario_id:Usuario

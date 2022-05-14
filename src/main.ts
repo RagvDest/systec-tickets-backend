@@ -2,8 +2,13 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as express from 'express';
 import * as session from 'express-session'; // Typescript
+import { env } from 'process';
 var cors = require('cors')
 const FileStore = require('session-file-store')(session); // Nodejs
+
+const bodyParser = require('body-parser');
+const nodemailer = require("nodemailer");
+
 
 
 async function bootstrap() {

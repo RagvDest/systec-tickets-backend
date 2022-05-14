@@ -11,9 +11,12 @@ import { TicketService } from './ticket/ticket.service';
 import { TicketModule } from './ticket/ticket.module';
 import { AppGateway } from './app.gateway';
 import { NotificacionModule } from './notificacion/notificacion.module';
+import { ConfigModule } from '@nestjs/config';
+
 
 @Module({
   imports: [
+    ConfigModule.forRoot(),
     MongooseModule.forRoot('mongodb://localhost/systec'),
     EstadoModule,
     RolModule,

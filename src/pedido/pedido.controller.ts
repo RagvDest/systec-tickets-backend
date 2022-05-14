@@ -11,6 +11,7 @@ import { Persona } from 'src/persona/persona.entity';
 import { TicketService } from 'src/ticket/ticket.service';
 import { EstadoService } from 'src/estado/estado.service';
 import { Ticket } from 'src/ticket/ticket.entity';
+import { NotificacionService } from 'src/notificacion/notificacion.service';
 var capitalize = require('capitalize')
 
 
@@ -22,7 +23,9 @@ export class PedidoController {
     private readonly _personaServices:PersonaService,
     private readonly _ticketServices:TicketService,
     private readonly _estadoServices:EstadoService,
-    private readonly _rolServices:RolService) {}
+    private readonly _rolServices:RolService,
+    private readonly notifiService:NotificacionService
+    ) {}
 
     private logger:Logger = new Logger('PedidoController');
 
@@ -64,12 +67,13 @@ export class PedidoController {
         if(pedido.ped_estado=='CERRADO'){
           await this.crearEstadoCerrado(pedido,tickets,idPedido);
         }
-          
+        let notifi = await this.notifiService.generateNotifi("Pedido",pedido.ped_nro_orden,"Estado o fecha de entrega editada",pedidoEncontrado.usuario_id,pedidoEncontrado['_id']);
         const pedidoActualizado = await this.pedidoService.updateByID(pedidoEncontrado['_id'],pedido);
-        res.send({pedido:Object.assign(pedidoActualizado,pedido),tickets:tickets});
+        res.send({pedido:Object.assign(pedidoActualizado,pedido),tickets:tickets,notificacion:notifi});
       }
     } catch (error) {
       this.logger.error(error);
+      this.logger.error("update")
     }
 
   }
@@ -86,7 +90,7 @@ export class PedidoController {
                     Math.random().toString(36).substring(2, 5)+"-"+
                     Math.random().toString(36).substring(2, 5);
       try {
-        if(await this._rolServices.isUserType(session,['Admin','Empleado'])){
+        if(await !this._rolServices.isUserType(session,['Admin','Empleado'])){
           res.status(403).send({
             "statusCode": 403,
             "message": "Forbidden resource",
@@ -145,7 +149,6 @@ export class PedidoController {
         });
         return;
       }*/
-      console.log(JSON.stringify(body));
       if(body.usuario && body.usuario.rol=='Cliente'){
         results = await this.pedidosCliente(body.usuario.username._id,body.usuario.persona,session.codPedido);
         this.logger.debug("Cargando pedidos del cliente");
@@ -162,12 +165,86 @@ export class PedidoController {
         
         
 
-        res.send({results:results});
+        res.status(200).send({results:results});
       }
     } catch (error) {
       this.logger.error(error);
+      res.status(500).send(error);
     }
+  }
+
+  @Get('info/:idPedido')
+  async getInfoPedido(
+    @Session() session,
+    @Res() res,
+    @Param('idPedido') pedido_id
+  ){
+    try {
+      if(await this._rolServices.isUserType(session,[])){
+        console.log('Dent');
+        res.status(403).send({
+          "statusCode": 403,
+          "message": "Forbidden resource",
+          "error": "Forbidden"
+        });
+        return;
+      }
+      let pedido = await this.pedidoService.findByIdComplete(pedido_id,{path:'usuario_id',populate:{path:'persona_id'}});
+      let result = {
+        id_usuario:pedido.usuario_id['_id'],
+        p_cedula:pedido.usuario_id.persona_id.p_cedula,
+        p_nombres:(pedido.usuario_id.persona_id.p_nombres+' '+pedido.usuario_id.persona_id.p_apellidos),
+        pedido:pedido
+      }
+      res.send(result);
+    } catch (error) {
+      this.logger.error("GetInfoPedido: "+error);
+    }
+  }
+
+  @Get('tpendiente')
+  async getTrabajosPendientes(
+    @Session() session,
+    @Res() res
+  ){
+    try {
+      if(await !this._rolServices.isUserType(session,['Empleado','Administrador'])){
+        res.status(403).send({
+          "statusCode": 403,
+          "message": "Forbidden resource",
+          "error": "Forbidden"
+        });
+        return;
+      }
+      let param = {ped_estado:{$not:/CERRADO/}};
+      let sortParam = {ped_fc_fin:'asc'};
+      let populateParam = {path:'usuario_id',populate:{path:'persona_id'}};
+
+      let pedidos = await this.pedidoService.find(param,sortParam,populateParam);
+      let results = [];
+      for(var u=0;u<pedidos.length;u++){
+        let pedido = {
+          ped_fc_fin:null,
+          ped_nro_orden:null,
+          usuario_id:null,
+          _id:null,
+          ped_nro_tickets:null
+        };
+        let ped = pedidos[u];
+        pedido.ped_fc_fin = ped.ped_fc_fin;
+        pedido.ped_nro_orden = ped.ped_nro_orden;
+        pedido.usuario_id = ped.usuario_id;
+        pedido._id = ped['_id'];
+        let countTickets = await this._ticketServices.countTickets({pedido_id:pedido['_id']})
+        pedido.ped_nro_tickets = countTickets;
+        results.push(pedido);
+      }
       
+      res.send(results);
+    } catch (error) {
+      this.logger.error(error);
+      this.logger.error("TPendientess");
+    }
   }
 
   async crearEstadoCerrado(
@@ -238,7 +315,7 @@ export class PedidoController {
         query = {usuario_id:usuario['_id']};
       else
         query = {usuario_id:usuario['_id'], ped_estado:estado};
-      pedidos = await this.pedidoService.find(query,orden);
+      pedidos = await this.pedidoService.find(query,{ped_fc_registro:orden});
 
       for(var u=0;u<pedidos.length;u++){
         completo = {

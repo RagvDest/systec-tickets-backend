@@ -7,8 +7,8 @@ import { Pedido } from './pedido.entity';
 export class PedidoService{
     constructor(@InjectModel(Pedido.name) private pedidoModel:Model<Pedido>){}
 
-    async find(param?,orden?):Promise<Pedido[]>{
-        return this.pedidoModel.find(param).sort({ped_fc_registro:orden}).exec();
+    async find(param?,orden?,pathPop?):Promise<Pedido[]>{
+        return this.pedidoModel.find(param).populate(pathPop).sort(orden).exec();
     }
     async findByID(id?):Promise<Pedido>{
         return this.pedidoModel.findById(id).exec();
@@ -22,6 +22,8 @@ export class PedidoService{
     }
     async findByParam(param?):Promise<Pedido>{
         return this.pedidoModel.findOne(param).exec();
-
+    }
+    async findByIdComplete(idPedido,paramPolulate?):Promise<Pedido>{
+        return this.pedidoModel.findById(idPedido).populate(paramPolulate).exec();
     }
 }

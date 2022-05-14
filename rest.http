@@ -1,3 +1,10 @@
+### Password
+
+POST http://localhost:3000/users/password
+
+### TEST HASH Password
+
+POST http://localhost:3000/users/test
 
 ### Logearse
 POST http://localhost:3000/users/logIn

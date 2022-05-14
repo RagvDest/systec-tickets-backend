@@ -21,7 +21,7 @@ export class UsuarioController{
         private readonly _usuarioServices:UsuarioService,
         private readonly _personaServices:PersonaService,
         private readonly _rolServices:RolService,
-        private readonly _pedidoServices:PedidoService
+        private readonly _pedidoService:PedidoService
     ){}
 
     private logger:Logger = new Logger('UsuarioController');
@@ -37,12 +37,42 @@ export class UsuarioController{
       res.status(200).send({mensaje:"Ha cerrado su sesión"});
   }
 
+  @Post('recover-pass')
+  async recoverPass(
+      @Res() res,
+      @Body('mail') mail
+  ){
+      try {
+        let user = await this._usuarioServices.findByPersonaID({u_mail:mail});
+        if(user==null){
+            res.status(200).send({});
+        }
+        const id_persona = user.persona_id;
+        var dateHash = new Date();
+        var dateFormated = this._usuarioServices.fcConvert(dateHash);
+        console.log(dateFormated);
+        var hasheado = await bcrypt.hash(dateFormated, saltRounds);
+        hasheado = hasheado.replace("/","");
+        user.u_hash = hasheado;
+        user = await this._usuarioServices.updateByID(user['_id'],user);
+        await this.generarPassword(
+            hasheado,user['_id'],
+            user.u_mail,id_persona.p_nombres);
+
+        res.status(200).send({});
+
+      } catch (error) {
+          this.logger.error("Recover Pass: "+error);
+      }
+  }
+
 
     @Post('pass')
     async cambiarPassword(
         @Res() res,
         @Body('pass') pass,
-        @Body('id_user') idUsuario
+        @Body('user_id') idUsuario,
+        @Body('hash_id') hash
     ){
         //Pendiente implementar el código por mail
         try {
@@ -51,13 +81,17 @@ export class UsuarioController{
                 res.status(400).send({error:'No existe usuario'});
                 throw new Error("No existe usuario");
             }
+            if(usuario.u_hash==='hash'){
+                res.status(400).send({error:'Operación no autorizada'});
+                throw new Error("Operación no autorizada");
+            }
             let hash = await bcrypt.hash(pass, saltRounds);
             usuario.u_password = hash;
+            usuario.u_hash="";
             const usuarioActualizado = await this._usuarioServices.updateByID(idUsuario,usuario);
-            
             res.status(200).send({usuarioActualizado,mensaje:"Contraseña guardada"});
         } catch (error) {
-            this.logger.error(error)
+            this.logger.error("Change Password: "+error)
         }
     }
     
@@ -65,7 +99,7 @@ export class UsuarioController{
     async loginCustomers(
         @Res() res,
         @Body('identificacion') ident,
-        @Body('orden') orden,
+        @Body('orden') nOrden,
         @Session() session
     ){
         try {
@@ -83,7 +117,7 @@ export class UsuarioController{
                 res.send({mensaje:"Ingrese como empleado"});
                 return;
             }
-            let pedidos = await this._pedidoServices.find({usuario_id:usuario,ped_nro_orden:orden});
+            let pedidos = await this._pedidoService.find({usuario_id:usuario,ped_nro_orden:nOrden});
             
 
             if(pedidos.length<1){
@@ -106,7 +140,7 @@ export class UsuarioController{
 
             session.usuario = usuarioSession;
             session.rol = rol;
-            session.codPedido = orden;
+            session.codPedido = nOrden;
             res.send({
                 user:{
                     username:session.usuario,
@@ -131,7 +165,7 @@ export class UsuarioController{
         console.log(username);
         console.log(pass);
         try {
-            let usuarioArr = await this._usuarioServices.find({u_usuario:username});
+            let usuarioArr = await this._usuarioServices.find({u_usuario:username.toLowerCase()});
             let usuario = usuarioArr[0];
             if(usuario==null){
                 res.status(400).send({mensaje:"Error al iniciar sesión. Revise su usuario y contraseña"});
@@ -160,6 +194,7 @@ export class UsuarioController{
             }
         } catch (error) {
             this.logger.error(error)
+            return;
         }
     }
 
@@ -173,7 +208,7 @@ export class UsuarioController{
     ){
         input = input != null ? input.toLowerCase():'';
         console.log(session.rol);
-        if(await this._rolServices.isUserType(session,['Admin','Empleado'])){
+        if(await !this._rolServices.isUserType(session,['Admin','Empleado'])){
             console.log("Dentro");
             res.status(403).send({
               "statusCode": 403,
@@ -252,7 +287,7 @@ export class UsuarioController{
     ){
         var id_persona;
         try {
-            if(await this._rolServices.isUserType(session,['Admin','Empleado'])){
+            if(await !this._rolServices.isUserType(session,['Admin','Empleado'])){
                 res.status(403).send({
                   "statusCode": 403,
                   "message": "Forbidden resource",
@@ -264,7 +299,7 @@ export class UsuarioController{
             usuario.persona_id = id_persona;
             usuario.u_usuario = usuario.u_usuario.toLowerCase();
             usuario.u_mail = usuario.u_mail.toLowerCase();
-
+            console.log(rol);
             const rol_id = await this._rolServices.findByID(rol);
             usuario.rol_id = rol_id;
             
@@ -282,14 +317,36 @@ export class UsuarioController{
                 res.send({errores:errores});
             }else{
                 usuario.u_activo = true;
-                const usuarioCreado = await this._usuarioServices.create(usuario);
-                res.send({ok:true,usuarioCreado:usuarioCreado})
+                let usuarioCreado = await this._usuarioServices.create(usuario);
+                if(rol_id.r_rol==='Empleado'){
+                    var dateHash = new Date();
+                    var dateFormated = this._usuarioServices.fcConvert(dateHash);
+                    console.log(dateFormated);
+                    var hasheado = await bcrypt.hash(dateFormated, saltRounds);
+                    hasheado.replace("/","");
+                    usuarioCreado.u_hash = hasheado;
+                    usuarioCreado = await this._usuarioServices.updateByID(usuarioCreado['_id'],usuarioCreado);
+                    await this.generarPassword(
+                        hasheado,usuarioCreado['_id'],
+                        usuarioCreado.u_mail,id_persona.p_nombres);
+                }
+                res.send({ok:true,usuario:usuarioCreado,persona:id_persona,rol:rol_id})
             }
         } catch (error) {
-            this.logger.error(error);
+            this.logger.error("Error Crear Usuario: "+error);
             // Eliminar persona
             await this._personaServices.deletePerson(id_persona['_id']);
+            res.status(500).send({});
         }
+    }
+
+    @Post('test')
+    async testFechaHash(){
+        var dateHash = new Date();
+        var dateFormated = this._usuarioServices.fcConvert(dateHash);
+        console.log(dateFormated);
+        var hasheado = await bcrypt.hash(dateFormated, saltRounds);
+        console.log(hasheado);
     }
 
     @Get(':idUsuario')
@@ -377,6 +434,40 @@ export class UsuarioController{
         }
     }
 
+    async generarPassword(
+        hash,
+        id_usuario,
+        mail_usuario,
+        nombres
+    ){
+        try {
+            console.log(process.env.USER_MAIL);
+            await this._usuarioServices.sendMail(
+                "ragvdr4develop@gmail.com",
+                mail_usuario,
+                "Generar contraseña",
+                "",
+                `<b>Hola ${nombres}!</b>
+                <br/>
+                Se generó una solicitud para registrar su contraseña. Si usted lo solicitó por favor ingrese al siguiente enlace:
+                <br/>
+                <a href='${process.env.BASE_URL}generate-pass/${id_usuario}/${hash}' target='_blank'>Generar contraseña</a>
+                <br/>
+                <br/>
+                Si usted no solicitó un cambio de contraseña, por favor ignore este correo.
+                <br/>
+                <br/>
+                <br/>
+                Saludos cordiales`);
+
+            this.logger.debug("Mensaje Enviado a: "+mail_usuario);
+            return true;
+        } catch (error) {
+            this.logger.error("Generar Password: "+error);
+            return false;
+        }
+    }
+
     // COMPLEMENTOS
     async crearPersona(
         @Res() res,
@@ -417,7 +508,6 @@ export class UsuarioController{
             username:{},
             persona:{}
         };
-
         if(op==='u'){
             usuarios = await this._usuarioServices.find(param);
             for(var i=0;i<usuarios.length;i++){
