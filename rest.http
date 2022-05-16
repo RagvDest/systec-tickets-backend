@@ -1,3 +1,15 @@
+### DashBoard Data
+GET http://localhost:3000/dashboard
+
+
+### ResetPassword
+POST http://localhost:3000/users/recover-pass
+content-type: application/json
+
+{
+    "mail":"negove4884@hbehs.com"
+}
+
 ### Password
 
 POST http://localhost:3000/users/password
@@ -124,7 +136,7 @@ POST http://localhost:3000/users/pass
 content-type: application/json
 
 {
-    "id_user":"61e902d8996cc57b8dca918d",
+    "user_id":"61e902d8996cc57b8dca918d",
     "pass":"1234"
 }
 

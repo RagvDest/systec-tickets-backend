@@ -26,4 +26,7 @@ export class PedidoService{
     async findByIdComplete(idPedido,paramPolulate?):Promise<Pedido>{
         return this.pedidoModel.findById(idPedido).populate(paramPolulate).exec();
     }
+    async findByDate(param):Promise<Pedido[]>{
+        return this.pedidoModel.aggregate(param).exec();
+    }
 }

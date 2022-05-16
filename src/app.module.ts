@@ -12,6 +12,13 @@ import { TicketModule } from './ticket/ticket.module';
 import { AppGateway } from './app.gateway';
 import { NotificacionModule } from './notificacion/notificacion.module';
 import { ConfigModule } from '@nestjs/config';
+import { UsuarioService } from './usuario/usuario.service';
+import { PedidoService } from './pedido/pedido.service';
+import { Usuario, UsuarioSchema } from './usuario/usuario.entity';
+import { Persona, PersonaSchema } from './persona/persona.entity';
+import { Rol } from './rol/rol.entity';
+import { Pedido, PedidoSchema } from './pedido/pedido.entity';
+import { Ticket, TicketSchema } from './ticket/ticket.entity';
 
 
 @Module({
@@ -25,9 +32,17 @@ import { ConfigModule } from '@nestjs/config';
     PedidoModule,
     TicketModule,
     EstadoModule,
-    NotificacionModule
+    NotificacionModule,
+
+    MongooseModule.forFeature(
+      [
+          {name:Usuario.name, schema:UsuarioSchema},
+          {name:Persona.name, schema:PersonaSchema},
+          {name:Pedido.name,schema:PedidoSchema},
+          {name:Ticket.name,schema:TicketSchema}
+      ])
   ],
   controllers: [AppController],
-  providers: [AppService, AppGateway],
+  providers: [AppService, AppGateway,UsuarioService,PedidoService,TicketService],
 })
 export class AppModule {}

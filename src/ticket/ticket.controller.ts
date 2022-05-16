@@ -107,7 +107,7 @@ export class TicketController {
         
         ticket.pedido_id = pedido;
         ticket.t_num = numTicket.toUpperCase();
-        ticket.t_estado = 'Nuevo';
+        ticket.t_estado = 'NUEVO';
 
         const errores = await validate(ticketDto);
         if(errores.length>0){
