@@ -2,7 +2,6 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as express from 'express';
 import * as session from 'express-session'; // Typescript
-import { env } from 'process';
 var cors = require('cors')
 const FileStore = require('session-file-store')(session); // Nodejs
 
@@ -17,7 +16,7 @@ async function bootstrap() {
   
 
   app.use(cors({
-    origin : 'http://localhost:3001',
+    origin : process.env.BASE_URL,
     credentials: true
   }));
 
@@ -25,7 +24,7 @@ async function bootstrap() {
   app.use(
     session({
       name: 'server-session-id',
-      secret: 'hasta las 15',
+      secret: process.env.SECRET_SESSION,
       resave: false,
       saveUninitialized: false,
       cookie: {
@@ -36,6 +35,6 @@ async function bootstrap() {
     })
   );
 
-  await app.listen(3000);
+  await app.listen(process.env.PORT || 3000);
 }
 bootstrap();

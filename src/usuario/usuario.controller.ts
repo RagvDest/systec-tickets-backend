@@ -451,7 +451,7 @@ export class UsuarioController{
                 <br/>
                 Se generó una solicitud para registrar su contraseña. Si usted lo solicitó por favor ingrese al siguiente enlace:
                 <br/>
-                <a href='${process.env.BASE_URL}generate-pass/${id_usuario}/${hash}' target='_blank'>Generar contraseña</a>
+                <a href='${process.env.BASE_URL}/generate-pass/${id_usuario}/${hash}' target='_blank'>Generar contraseña</a>
                 <br/>
                 <br/>
                 Si usted no solicitó un cambio de contraseña, por favor ignore este correo.

@@ -19,12 +19,13 @@ import { Persona, PersonaSchema } from './persona/persona.entity';
 import { Rol } from './rol/rol.entity';
 import { Pedido, PedidoSchema } from './pedido/pedido.entity';
 import { Ticket, TicketSchema } from './ticket/ticket.entity';
+import { PersonaService } from './persona/persona.service';
 
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
-    MongooseModule.forRoot('mongodb://localhost/systec'),
+    MongooseModule.forRoot(process.env.MONGO_URI),
     EstadoModule,
     RolModule,
     PersonaModule,
@@ -39,10 +40,11 @@ import { Ticket, TicketSchema } from './ticket/ticket.entity';
           {name:Usuario.name, schema:UsuarioSchema},
           {name:Persona.name, schema:PersonaSchema},
           {name:Pedido.name,schema:PedidoSchema},
-          {name:Ticket.name,schema:TicketSchema}
+          {name:Ticket.name,schema:TicketSchema},
+          {name:Persona.name,schema:PersonaSchema}
       ])
   ],
   controllers: [AppController],
-  providers: [AppService, AppGateway,UsuarioService,PedidoService,TicketService],
+  providers: [AppService, AppGateway,UsuarioService,PedidoService,TicketService,PersonaService],
 })
 export class AppModule {}

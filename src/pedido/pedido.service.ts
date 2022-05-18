@@ -2,10 +2,13 @@ import { Model } from 'mongoose';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Pedido } from './pedido.entity';
+import { Usuario } from 'src/usuario/usuario.entity';
 
 @Injectable()
 export class PedidoService{
-    constructor(@InjectModel(Pedido.name) private pedidoModel:Model<Pedido>){}
+    constructor(
+        @InjectModel(Pedido.name) private pedidoModel:Model<Pedido>,
+        @InjectModel(Usuario.name) private usuarioModel:Model<Usuario>){}
 
     async find(param?,orden?,pathPop?):Promise<Pedido[]>{
         return this.pedidoModel.find(param).populate(pathPop).sort(orden).exec();
@@ -27,6 +30,8 @@ export class PedidoService{
         return this.pedidoModel.findById(idPedido).populate(paramPolulate).exec();
     }
     async findByDate(param):Promise<Pedido[]>{
-        return this.pedidoModel.aggregate(param).exec();
+        let pedidos = await this.pedidoModel.aggregate(param).exec();
+        await this.usuarioModel.populate(pedidos,{path:'usuario_id',populate:{path:'persona_id'}});
+        return pedidos;
     }
 }
