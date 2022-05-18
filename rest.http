@@ -1,3 +1,32 @@
+### DashBoard Data
+GET http://localhost:3000/dashboard
+
+
+### ResetPassword
+POST http://localhost:3000/users/recover-pass
+content-type: application/json
+
+{
+    "mail":"negove4884@hbehs.com"
+}
+
+### Password
+
+POST http://localhost:3000/users/password
+
+### TEST HASH Password
+
+POST http://localhost:3000/users/test
+
+### Logearse
+POST http://localhost:3000/users/logIn
+content-type: application/json
+
+{
+    "password": "1234",
+    "username": "TitoGV"
+}
+
 ### ROL
 
 GET http://localhost:3000/rol/all
@@ -61,6 +90,16 @@ content-type: application/json
         "rol_id":"61e7dc27aed590273949963f"
     }
 }
+
+### LogIn
+POST http://localhost:3000/users/log-cli
+content-type: application/json
+
+{
+    "identificacion":"1305412321",
+    "orden":"DDV-5AC-3S4"
+}
+
 ### ACTUALIZAR
 
 PATCH  http://localhost:3000/users/update/61e902d8996cc57b8dca918d
@@ -71,7 +110,8 @@ content-type: application/json
     {
         "p_nombres": "Tito Joses",
         "p_apellidos":"Gorozabel Villavicencio",
-        "p_cedula":"1305412321"
+        "p_cedula":"1305412321",
+        "p_tel":"0983456585"
     },
     "usuario":
     {
@@ -79,7 +119,7 @@ content-type: application/json
         "u_mail":"titojoses@hotmail.com",
         "u_activo":true,
         "u_hash":"",
-        "u_password":"",
+        "u_password":"12355",
         "rol_id":"61e7dc21aed590273949963d"
     }
 }
@@ -96,6 +136,119 @@ POST http://localhost:3000/users/pass
 content-type: application/json
 
 {
-    "id_user":"61ee40368094d681eb1f6fdc",
+    "user_id":"61e902d8996cc57b8dca918d",
     "pass":"1234"
 }
+
+### --- PEDIDOS LISTAR
+
+POST http://localhost:3000/pedido/all?input='Tito'
+content-type: application/json
+
+
+
+### Crear PEDIDO
+POST http://localhost:3000/pedido/crear
+content-type: application/json
+
+{
+    "pedido":
+    {
+        "ped_fc_registro":"2022-02-01T09:37:12.168Z",
+        "ped_fc_fin":null
+    },
+    "id_usuario":"61e902d8996cc57b8dca918d"
+}
+
+### ACTUALIZAR PEDIDO
+PATCH http://localhost:3000/pedido/update/624d49e60eb3e0a3bc28574e
+content-type: application/json
+
+{
+    "pedido":
+    {
+        "ped_fc_registro":"2022-04-06T08:05:52.571Z",
+        "ped_fc_fin":null,
+        "ped_nro_orden" : "8O4-XSF-2J5",
+        "ped_estado" : "CERRADO"
+    }
+}
+
+
+### LISTAR TICKETS
+GET http://localhost:3000/ticket/all/624d49e60eb3e0a3bc28574e
+
+### CREAR TICKET
+POST http://localhost:3000/ticket/crear
+content-type: application/json
+
+{
+    "ticket":
+    {
+        "t_detalle":"PRUEBA 21",
+        "t_total":11,
+        "t_abono":5,
+        "t_tipo_equipo":"COMPUTADOR"
+    },
+    "id_pedido":"61f900151c56deb4b891b893"
+}
+
+### ACTUALIZAR TICKET
+PATCH http://localhost:3000/ticket/update/61f900151c56deb4b891b893
+content-type: application/json
+
+{
+    "ticket":
+    {
+        "t_detalle":"NO ENCIENDE, PANTALLA ROTISIMA",
+        "t_saldo":0,
+        "t_num":"ox4-bc2-9jk",
+        "t_abono":0,
+        "t_tipo_equipo":"COMPUTADOR"
+    }
+}
+
+### ------------ ESTADOS CREAR
+POST http://localhost:3000/estado/crear
+content-type: application/json
+
+{
+    "estado":{
+        "e_nombre":"COMPLETO",
+        "e_detalle":"Listo para entrega",
+        "e_usuario":"Juan Segundo",
+        "user_id": {
+            "persona_id": "61e902d8996cc57b8dca918a",
+            "u_activo": true,
+            "u_mail": "titojoses@hotmail.com",
+            "u_usuario": "TitoGV",
+            "_id": "61e902d8996cc57b8dca918d"
+            }
+    },
+    "id_ticket":"62395dc0497153b3cfb10b6b"
+}
+
+### UPDATE ESTADO
+PATCH http://localhost:3000/estado/update/623a4863ec10d1bb34a2a93d
+content-type: application/json
+
+{
+    "comentario":{
+        "c_detalle":"Mas comentarios",
+        "c_usuario":"TitoGV",
+        "user_id": "61e902d8996cc57b8dca918d"
+    }
+}
+
+
+### LISTAR
+GET http://localhost:3000/estado/all/624d49ef0eb3e0a3bc285762
+
+
+
+### LISTAR
+GET http://localhost:3000/estado/allLast/6238cacc287d5b3d5dcaa20a
+
+### Comentarios
+
+GET http://localhost:3000/estado/comentarios/623a4863ec10d1bb34a2a93d

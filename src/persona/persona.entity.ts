@@ -15,6 +15,9 @@ export class Persona{
     @Prop({required:true})
     p_cedula:string;
 
+    @Prop({})
+    p_tel:string;
+
 }
 
 export const PersonaSchema = SchemaFactory.createForClass(Persona);

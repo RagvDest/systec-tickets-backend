@@ -5,32 +5,36 @@ import * as session from 'express-session'; // Typescript
 var cors = require('cors')
 const FileStore = require('session-file-store')(session); // Nodejs
 
-const cookieParser = require('cookie-parser');
+const bodyParser = require('body-parser');
+const nodemailer = require("nodemailer");
+
 
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.use(cookieParser('Clave Secreta'));
   app.use(express.static('public'));
+  
 
   app.use(cors({
-    origin : 'http://localhost:3001',
+    origin : process.env.BASE_URL,
     credentials: true
   }));
+
 
   app.use(
     session({
       name: 'server-session-id',
-      secret: 'hasta las 15',
+      secret: process.env.SECRET_SESSION,
       resave: false,
-      saveUninitialized: true,
+      saveUninitialized: false,
       cookie: {
+        sameSite: true,
         secure: false
       },
       store: new FileStore()
     })
   );
 
-  await app.listen(3000);
+  await app.listen(process.env.PORT || 3000);
 }
 bootstrap();
