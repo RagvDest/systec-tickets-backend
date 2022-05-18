@@ -38,14 +38,14 @@ export class PedidoController {
     @Param('idPedido') idPedido?
   ){
     try {
-      /*if(await this._rolServices.isUserType(session,['Admin','Empleado'])){
+      if(await !this._rolServices.isUserType(session,['Admin','Empleado'])){
         res.status(403).send({
           "statusCode": 403,
           "message": "Forbidden resource",
           "error": "Forbidden"
         });
         return;
-      }*/
+      }
       const pedidoEncontrado = await this.pedidoService.findByID(idPedido); 
       if(pedidoEncontrado==null){
         res.status(400).send({error:'No existe pedido'});
@@ -140,7 +140,7 @@ export class PedidoController {
     let param;
     try {
       let results;
-     /* if(await this._rolServices.isUserType(session,[])){
+      if(await !this._rolServices.isUserType(session,[])){
         console.log('Dent');
         res.status(403).send({
           "statusCode": 403,
@@ -148,7 +148,7 @@ export class PedidoController {
           "error": "Forbidden"
         });
         return;
-      }*/
+      }
       if(body.usuario && body.usuario.rol=='Cliente'){
         results = await this.pedidosCliente(body.usuario.username._id,body.usuario.persona,session.codPedido);
         this.logger.debug("Cargando pedidos del cliente");
@@ -180,7 +180,7 @@ export class PedidoController {
     @Param('idPedido') pedido_id
   ){
     try {
-      if(await this._rolServices.isUserType(session,[])){
+      if(await !this._rolServices.isUserType(session,[])){
         console.log('Dent');
         res.status(403).send({
           "statusCode": 403,

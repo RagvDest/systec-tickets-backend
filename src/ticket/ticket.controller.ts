@@ -30,7 +30,7 @@ export class TicketController {
     @Param('idTicket') idTicket?
   ){
     try {
-      if(await this._rolServices.isUserType(session,['Admin','Empleado'])){
+      if(await !this._rolServices.isUserType(session,['Admin','Empleado'])){
         res.status(403).send({
           "statusCode": 403,
           "message": "Forbidden resource",

@@ -22,7 +22,7 @@ export class PersonaController{
         @Session() session
     ){
         try {
-            if(await this._rolServices.isUserType(session,['Admin','Empleado'])){
+            if(await !this._rolServices.isUserType(session,['Admin','Empleado'])){
                 res.status(403).send({
                   "statusCode": 403,
                   "message": "Forbidden resource",
@@ -46,7 +46,7 @@ export class PersonaController{
         @Session() session
     ){
         try {
-            if(await this._rolServices.isUserType(session,[])){
+            if(await !this._rolServices.isUserType(session,[])){
                 res.status(403).send({
                   "statusCode": 403,
                   "message": "Forbidden resource",
@@ -68,7 +68,7 @@ export class PersonaController{
         @Session() session
     ){
         try {
-            if(await this._rolServices.isUserType(session,['Admin','Empleado'])){
+            if(await !this._rolServices.isUserType(session,['Admin','Empleado'])){
                 res.status(403).send({
                   "statusCode": 403,
                   "message": "Forbidden resource",
@@ -99,7 +99,7 @@ export class PersonaController{
         person.p_apellidos = persona.p_apellidos;
         
         try {
-            if(await this._rolServices.isUserType(session,[])){
+            if(await !this._rolServices.isUserType(session,[])){
                 res.status(403).send({
                   "statusCode": 403,
                   "message": "Forbidden resource",
@@ -138,7 +138,7 @@ export class PersonaController{
         person.p_apellidos = persona.p_apellidos;
         person.p_cedula = persona.p_cedula;
         try {
-            if(await this._rolServices.isUserType(session,['Admin','Empleado'])){
+            if(await !this._rolServices.isUserType(session,['Admin','Empleado'])){
                 res.status(403).send({
                   "statusCode": 403,
                   "message": "Forbidden resource",

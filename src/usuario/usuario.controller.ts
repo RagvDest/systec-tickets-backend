@@ -244,7 +244,7 @@ export class UsuarioController{
         @Session() session
     ){
         try {
-            if(await this._rolServices.isUserType(session,['Admin','Empleado'])){
+            if(await !this._rolServices.isUserType(session,['Admin','Empleado'])){
                 res.status(403).send({
                   "statusCode": 403,
                   "message": "Forbidden resource",
@@ -356,7 +356,7 @@ export class UsuarioController{
         @Session() session
     ){
         try {
-            if(await this._rolServices.isUserType(session,[])){
+            if(await !this._rolServices.isUserType(session,[])){
                 res.status(403).send({
                   "statusCode": 403,
                   "message": "Forbidden resource",
@@ -463,8 +463,7 @@ export class UsuarioController{
             this.logger.debug("Mensaje Enviado a: "+mail_usuario);
             return true;
         } catch (error) {
-            this.logger.error("Generar Password: "+error);
-            return false;
+            throw new Error("Generar Password: "+error);
         }
     }
 

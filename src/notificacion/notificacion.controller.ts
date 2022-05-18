@@ -18,7 +18,7 @@ export class NotificacionController {
     ){
         try {
             let results = [];
-            if(await this._rolServices.isUserType(session,['Admin','Empleado'])){
+            if(await !this._rolServices.isUserType(session,['Admin','Empleado'])){
                 results = await this.notiService.find({usuario_id:session.usuario._id})
             }else{
                 results = await this.notiService.find({$or:[{usuario_id:session.usuario._id},{usuario_id:null}]});
