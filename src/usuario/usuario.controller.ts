@@ -323,7 +323,7 @@ export class UsuarioController{
                     var dateFormated = this._usuarioServices.fcConvert(dateHash);
                     console.log(dateFormated);
                     var hasheado = await bcrypt.hash(dateFormated, saltRounds);
-                    hasheado.replace("/","");
+                    hasheado = hasheado.replace("/","");
                     usuarioCreado.u_hash = hasheado;
                     usuarioCreado = await this._usuarioServices.updateByID(usuarioCreado['_id'],usuarioCreado);
                     await this.generarPassword(
@@ -388,7 +388,7 @@ export class UsuarioController{
     ){
         var idPersona;
         try {
-            if(await this._rolServices.isUserType(session,['Admin','Cliente'])){
+            if(await !this._rolServices.isUserType(session,['Admin','Cliente'])){
                 res.status(403).send({
                   "statusCode": 403,
                   "message": "Forbidden resource",

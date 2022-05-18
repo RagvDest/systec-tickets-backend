@@ -46,7 +46,7 @@ export class AppController {
       let pedidosMes = await this.pedidoService.findByDate(
         [
           {$addFields: {  "month" : {$month: '$ped_fc_registro'}}},
-          {$match: { month: 4}}
+          {$match: { month: mes}}
         ]
       );
 
