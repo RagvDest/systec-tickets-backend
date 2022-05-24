@@ -25,6 +25,9 @@ export class Usuario{
     @Prop()
     u_hash:string;
 
+    @Prop()
+    u_fc_registro:Date;
+
     @Prop({type: mongoose.Schema.Types.ObjectId, ref:'Rol'})
     rol_id:Rol
 

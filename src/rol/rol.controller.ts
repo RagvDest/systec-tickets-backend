@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Logger, Post, Res, Session } from '@nestjs/common';
+import { Body, Controller, Get, Logger, Post, Req, Res } from '@nestjs/common';
 import { Rol } from './rol.entity';
 import { RolService } from './rol.service';
 
@@ -12,36 +12,28 @@ export class RolController {
   @Post('crear')
   async crearRol(
       @Body() rol:Rol,
-      @Session() session,
+      @Req() req,
       @Res() res?
   ) {
-    if(await this.rolService.isUserType(session,'Admin')){
-      res.status(403).send({
-        "statusCode": 403,
-        "message": "Forbidden resource",
-        "error": "Forbidden"
-      });
+    if( req.user.data.rol_id.r_rol === 'Cliente' ||
+        req.user.data.rol_id.r_rol === 'Empleado'){
+      res.status(401).send();
       return;
-    }
+    } 
       const rolCreado = await this.rolService.crearRol(rol);
-      console.log(rolCreado);
-    return rolCreado;
+    res.send(rolCreado);
   }
 
   @Get('all')
   async findAll(
-    @Session() session,
+    @Req() req,
     @Res() res?
 ) {
     try {
-        if(await this.rolService.isUserType(session,['Admin','Empleado'])){
-          res.status(403).send({
-            "statusCode": 403,
-            "message": "Forbidden resource",
-            "error": "Forbidden"
-          });
-          return;
-        }
+      if(req.user.data.rol_id.r_rol==='Cliente'){
+        res.status(401).send();
+        return;
+      } 
         
         let param = {
           r_rol : {$ne: 'Administrador'}
@@ -49,7 +41,8 @@ export class RolController {
         const rols = await this.rolService.findAll(param);
         res.send({results:rols});
     } catch (error) {
-      this.logger.error(error);
+      this.logger.error(`Find Rol: ${error}`);
+      res.status(500).send(error);
     }
     
   }

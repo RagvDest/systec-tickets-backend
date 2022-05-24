@@ -1,4 +1,4 @@
-import { Controller, Get, Logger, Res, Session } from "@nestjs/common";
+import { Controller, Get, Logger, Req, Res} from "@nestjs/common";
 import { AppGateway } from "src/app.gateway";
 import { RolService } from "src/rol/rol.service";
 import { NotificacionService } from "./notificacion.service";
@@ -13,19 +13,20 @@ export class NotificacionController {
 
     @Get('all')
     async getAll(
-        @Session() session,
+        @Req() req,
         @Res() res
     ){
         try {
             let results = [];
-            if(await this._rolServices.isUserType(session,['Admin','Empleado'])){
-                results = await this.notiService.find({usuario_id:session.usuario._id})
+            if(['Admin','Empleado'].includes(req.user.data.rol_id.r_rol)){
+                results = await this.notiService.find({usuario_id:req.user.userId})
             }else{
-                results = await this.notiService.find({$or:[{usuario_id:session.usuario._id},{usuario_id:null}]});
+                results = await this.notiService.find({$or:[{usuario_id:req.user.userId},{usuario_id:null}]});
             }
             res.send(results);
         } catch (error) {
             this.logger.error(error);
+            res.status(500).send(error);
         }
     }
 

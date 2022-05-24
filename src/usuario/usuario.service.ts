@@ -29,6 +29,10 @@ export class UsuarioService{
     async findByID(usuario_id?):Promise<Usuario>{
         return this.usuarioModel.findById(usuario_id).exec();
     }
+    
+    async findOne(param?):Promise<Usuario>{
+        return await this.usuarioModel.findOne(param).populate({path:'persona_id'}).populate({path:'rol_id'}).exec();
+    }
 
     async updateByID(usuario_id?,query?):Promise<Usuario>{
         return this.usuarioModel.findByIdAndUpdate(usuario_id,query,{upsert:false});
@@ -36,6 +40,10 @@ export class UsuarioService{
 
     async findByPersonaID(param?):Promise<Usuario>{
         return this.usuarioModel.findOne(param).populate({path:'persona_id'}).exec();
+    }
+
+    async countByMonth(param):Promise<number>{
+        return this.usuarioModel.find(param).count();
     }
 
     fcConvert = (fc) =>{

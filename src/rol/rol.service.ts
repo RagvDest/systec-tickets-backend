@@ -20,19 +20,4 @@ export class RolService{
     async deleteRol(idRol?){
         return this.rolModel.findByIdAndDelete(idRol);
     }
-
-    async isUserType(session,user_type){
-        if(!session.rol){
-            return true;
-        }
-        else{
-            console.log("Tamos")
-            console.log(user_type);
-            console.log(session.rol.r_rol);
-            if(user_type.length===0) return false;
-            let resultado = !user_type.includes(session.rol.r_rol);
-            console.log(resultado);
-            return resultado;
-        }
-      }
 }

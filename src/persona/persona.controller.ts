@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Delete, Get, Logger, NotFoundException, Param, Patch, Post, Res, Session, ValidationPipe} from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Logger, NotFoundException, Param, Patch, Post, Req, Res} from '@nestjs/common';
 import { PersonaCreateDto } from './dto/persona.create.dto';
 import { Persona } from './persona.entity';
 import { PersonaService } from './persona.service';
@@ -19,23 +19,20 @@ export class PersonaController{
     @Get('all')
     async buscarPersonas(
         @Res() res,
-        @Session() session
+        @Req() req
     ){
         try {
-            if(await this._rolServices.isUserType(session,['Admin','Empleado'])){
-                res.status(403).send({
-                  "statusCode": 403,
-                  "message": "Forbidden resource",
-                  "error": "Forbidden"
-                });
+            if(req.user.data.rol_id.r_rol==='Cliente'){
+                res.status(401).send();
                 return;
-            }
+            } 
 
             const personas = await this._personaServices.findAll();
             res.send({results:personas});
             return personas;
         } catch (error) {
-            this.logger.error(error);
+            this.logger.error(`Personas ALL: ${error}`);
+            res.status(500).send(error);
         }
     }
 
@@ -43,21 +40,15 @@ export class PersonaController{
     async buscarPersonaID(
         @Res() res,
         @Param('idPersona') idPersona:string,
-        @Session() session
+        @Req() req
     ){
         try {
-            if(await this._rolServices.isUserType(session,[])){
-                res.status(403).send({
-                  "statusCode": 403,
-                  "message": "Forbidden resource",
-                  "error": "Forbidden"
-                });
-                return;
-            }
+            
             const personaEncontrada = await this._personaServices.findByID(idPersona);
             res.send({personaEncontrada:personaEncontrada});
         } catch (error) {
-            this.logger.error(error);
+            this.logger.error(`Persona ID: ${error}`);
+            res.status(500).send(error);
         }
     }
 
@@ -65,23 +56,20 @@ export class PersonaController{
     async eliminarPersonaID(
         @Res() res,
         @Param('idPersona') idPersona:string,
-        @Session() session
+        @Req() req
     ){
         try {
-            if(await this._rolServices.isUserType(session,['Admin','Empleado'])){
-                res.status(403).send({
-                  "statusCode": 403,
-                  "message": "Forbidden resource",
-                  "error": "Forbidden"
-                });
+            if(req.user.data.rol_id.r_rol==='Cliente'){
+                res.status(401).send();
                 return;
-            }
+            } 
             const eliminado = await this._personaServices.deletePerson(idPersona);
             this.logger.log(`Persona ${idPersona} eliminada.`)
-            this.logger.log(`Usuario resposable: ${session.usuario.u_username} - ${session.rol.r_rol}`);
+            this.logger.log(`Usuario resposable: ${req.user.data.u_usuario} - ${req.user.data.rol_id.r_rol}`);
             res.send({eliminado})
         } catch (error) {
-            this.logger.error(error);
+            this.logger.error(`Del Persona: ${error}`);
+            res.status(500).send(error);
         }
     }
 
@@ -89,7 +77,7 @@ export class PersonaController{
     async actualizarPersonaID(
         @Res() res,
         @Body() persona:Persona,
-        @Session() session,
+        @Req() req,
         @Param('idPersona') idPersona?
     ){
         delete persona['p_cedula'];
@@ -99,14 +87,6 @@ export class PersonaController{
         person.p_apellidos = persona.p_apellidos;
         
         try {
-            if(await this._rolServices.isUserType(session,[])){
-                res.status(403).send({
-                  "statusCode": 403,
-                  "message": "Forbidden resource",
-                  "error": "Forbidden"
-                });
-                return;
-            }
             const errores = await validate(person);
             if(errores.length>0){
                 console.error(errores);
@@ -122,7 +102,8 @@ export class PersonaController{
                 res.status(200).send({personaActualizada});
             }
         } catch (error) {
-            this.logger.error(error);
+            this.logger.error(`Update Persona: ${error}`);
+            res.status(500).send(error);
         }
 
     }
@@ -131,21 +112,17 @@ export class PersonaController{
     async crearPersona(
         @Res() res,
         @Body() persona:Persona,
-        @Session() session
+        @Req() req
     ){
         const person = new PersonaCreateDto();
         person.p_nombres = persona.p_nombres;
         person.p_apellidos = persona.p_apellidos;
         person.p_cedula = persona.p_cedula;
         try {
-            if(await this._rolServices.isUserType(session,['Admin','Empleado'])){
-                res.status(403).send({
-                  "statusCode": 403,
-                  "message": "Forbidden resource",
-                  "error": "Forbidden"
-                });
+            if(req.user.data.rol_id.r_rol==='Cliente'){
+                res.status(401).send();
                 return;
-            }
+            } 
             const errores = await validate(person);
 
             if(errores.length>0){
@@ -156,7 +133,8 @@ export class PersonaController{
                 res.send({personaCreada:personaCreada})
             }
         } catch (error) {
-            this.logger.error(error);
+            this.logger.error(`Crear Persona: ${error}`);
+            res.status(500).send(error);
         }
     }
 

@@ -1,5 +1,8 @@
 import { Module } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
+import { AuthModule } from 'src/auth/auth.module';
+import { AuthService } from 'src/auth/auth.service';
 import { Pedido, PedidoSchema } from 'src/pedido/pedido.entity';
 import { PedidoService } from 'src/pedido/pedido.service';
 import { Persona, PersonaSchema } from 'src/persona/persona.entity';
@@ -20,8 +23,10 @@ import { UsuarioService } from './usuario.service';
             {name:Persona.name, schema:PersonaSchema},
             {name:Rol.name, schema:RolSchema},
             {name:Pedido.name,schema:PedidoSchema}
-        ])],
-                controllers:[UsuarioController],
-    providers:[UsuarioService, PersonaService, RolService, PedidoService]
+        ]),
+        AuthModule
+    ],
+    controllers:[UsuarioController],
+    providers:[UsuarioService, PersonaService, RolService, PedidoService, AuthService, JwtService]
 })
 export class UsuarioModule {}
