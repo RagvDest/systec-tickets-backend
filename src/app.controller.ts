@@ -1,4 +1,4 @@
-import { Controller, Get, Logger, Res, Session } from '@nestjs/common';
+import { Controller, Get, Logger, Req, Res, Session } from '@nestjs/common';
 import { AppService } from './app.service';
 import { PedidoService } from './pedido/pedido.service';
 import { PersonaService } from './persona/persona.service';
@@ -22,24 +22,16 @@ export class AppController {
     return this.appService.getHello();
   }
 
-  @Get('info')
-  async getResumenEmployee(
-    @Session() session,
-    @Res() res
-  ){
-    try {
-      let param = {}
-    } catch (error) {
-      this.logger.error(error);
-    }
-  }
-
   @Get('dashboard')
   async getDashboard(
     @Res() res,
-    @Session() session
+    @Req() req
   ){
     try {
+      if( req.user.data.rol_id.r_rol === 'Cliente' ){
+        res.status(401).send();
+        return;
+    } 
       // Logic checkear solo Administrador
       let mes = new Date().getMonth()+1;
       console.log(mes);
@@ -50,7 +42,14 @@ export class AppController {
         ]
       );
 
-      
+      // Get Usuarios nuevos
+      let usuariosMes = await this.userService.countByMonth({u_fc_registro:mes});
+      let userMesPasado = await this.userService.countByMonth({u_fc_registro:mes>1 ?mes-1:mes});
+      let porcentaje = ((usuariosMes-userMesPasado)/userMesPasado)*100;
+
+      // Pedidos Activos
+      let pActivos = await this.pedidoService.countByEstado({ped_estado:{$not:/CERRADO/}});
+
       let idPedidos = pedidosMes.map((it)=> {
         let persona = it.usuario_id.persona_id;
         return {
@@ -137,7 +136,12 @@ export class AppController {
         totalVentas:totalVentas,
         txEquipos:txEquipos,
         txEstados:txEstados,
-        txClientes:txClienteArray
+        txClientes:txClienteArray,
+        txActivos:pActivos,
+        nUsers:{
+          n:usuariosMes,
+          p:porcentaje
+        }
       });
     } catch (error) {
       this.logger.error(`Dasboard: ${error}`);

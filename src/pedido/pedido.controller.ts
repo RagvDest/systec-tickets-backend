@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Logger, Param, Patch, Post, Query, Res, Session, ValidationPipe } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Logger, Param, Patch, Post, Query, Req, Res } from '@nestjs/common';
 import { UsuarioService } from 'src/usuario/usuario.service';
 import { PedidoCreateDto } from './dto/pedido.create.dto';
 import { Pedido} from './pedido.entity';
@@ -34,18 +34,14 @@ export class PedidoController {
   async actualizarPedido(
     @Res() res,
     @Body('pedido') pedido:Pedido,
-    @Session() session,
+    @Req() req,
     @Param('idPedido') idPedido?
   ){
     try {
-      if(await !this._rolServices.isUserType(session,['Admin','Empleado'])){
-        res.status(403).send({
-          "statusCode": 403,
-          "message": "Forbidden resource",
-          "error": "Forbidden"
-        });
+      if(req.user.data.rol_id.r_rol==='Cliente'){
+        res.status(401).send();
         return;
-      }
+    } 
       const pedidoEncontrado = await this.pedidoService.findByID(idPedido); 
       if(pedidoEncontrado==null){
         res.status(400).send({error:'No existe pedido'});
@@ -74,6 +70,7 @@ export class PedidoController {
     } catch (error) {
       this.logger.error(error);
       this.logger.error("update")
+      res.status(500).send(error);
     }
 
   }
@@ -82,7 +79,7 @@ export class PedidoController {
   async crearPedido(
       @Res() res,
       @Body('pedido') pedido:Pedido,
-      @Session() session,
+      @Req() req,
       @Body('id_usuario') id_usuario?
   ) {
     let usuario;
@@ -90,14 +87,10 @@ export class PedidoController {
                     Math.random().toString(36).substring(2, 5)+"-"+
                     Math.random().toString(36).substring(2, 5);
       try {
-        if(await !this._rolServices.isUserType(session,['Admin','Empleado'])){
-          res.status(403).send({
-            "statusCode": 403,
-            "message": "Forbidden resource",
-            "error": "Forbidden"
-          });
+        if(req.user.data.rol_id.r_rol==='Cliente'){
+          res.status(401).send();
           return;
-        }
+        } 
         usuario = await this.usuarioService.findByID(id_usuario);
         if(usuario===null){
           res.status(400).send({mensaje:"Usuario no existe"});
@@ -124,13 +117,14 @@ export class PedidoController {
         }
       } catch (error) {
         this.logger.error(error);
+        res.status(500).send(error);
       }
   }
 
   @Post('all')
   async findAll(
       @Res() res,
-      @Session() session,
+      @Req() req,
       @Body() body,
       @Query('filtro') filtro?,
       @Query('input') input?,
@@ -140,26 +134,24 @@ export class PedidoController {
     let param;
     try {
       let results;
-      if(await !this._rolServices.isUserType(session,[])){
-        console.log('Dent');
-        res.status(403).send({
-          "statusCode": 403,
-          "message": "Forbidden resource",
-          "error": "Forbidden"
-        });
+      if(req.user.data.rol_id.r_rol==='Cliente'){
+        res.status(401).send();
         return;
-      }
+    } 
       if(body.usuario && body.usuario.rol=='Cliente'){
-        results = await this.pedidosCliente(body.usuario.username._id,body.usuario.persona,session.codPedido);
+        results = await this.pedidosCliente(
+          body.usuario.username._id,
+          body.usuario.persona,
+          req.user.data.codPedido);
         this.logger.debug("Cargando pedidos del cliente");
         res.send({results:results})
         return;
       }else{
         input = input == null ? '' : input.toLowerCase();
         if(filtro=='Nombres'){
-          param = {p_nombres:{ $regex: '.*' + input + '.*' }}
+          param = {p_nombres:{ $regex: '.*' + input + '.*', $options:'i' }}
         }else if(filtro=='Cédula'){
-          param = {p_cedula:{ $regex: '.*' + input + '.*' }}
+          param = {p_cedula:{ $regex: '.*' + input + '.*', $options:'i' }}
         }
         results = await this.llenarDatos(param,orden,estado);
         
@@ -175,20 +167,11 @@ export class PedidoController {
 
   @Get('info/:idPedido')
   async getInfoPedido(
-    @Session() session,
+    @Req() req,
     @Res() res,
     @Param('idPedido') pedido_id
   ){
     try {
-      if(await !this._rolServices.isUserType(session,[])){
-        console.log('Dent');
-        res.status(403).send({
-          "statusCode": 403,
-          "message": "Forbidden resource",
-          "error": "Forbidden"
-        });
-        return;
-      }
       let pedido = await this.pedidoService.findByIdComplete(pedido_id,{path:'usuario_id',populate:{path:'persona_id'}});
       let result = {
         id_usuario:pedido.usuario_id['_id'],
@@ -199,23 +182,20 @@ export class PedidoController {
       res.send(result);
     } catch (error) {
       this.logger.error("GetInfoPedido: "+error);
+      res.status(500).send(error);
     }
   }
 
   @Get('tpendiente')
   async getTrabajosPendientes(
-    @Session() session,
+    @Req() req,
     @Res() res
   ){
     try {
-      if(await !this._rolServices.isUserType(session,['Empleado','Administrador'])){
-        res.status(403).send({
-          "statusCode": 403,
-          "message": "Forbidden resource",
-          "error": "Forbidden"
-        });
+      if(req.user.data.rol_id.r_rol==='Cliente'){
+        res.status(401).send();
         return;
-      }
+      } 
       let param = {ped_estado:{$not:/CERRADO/}};
       let sortParam = {ped_fc_fin:'asc'};
       let populateParam = {path:'usuario_id',populate:{path:'persona_id'}};
@@ -244,6 +224,7 @@ export class PedidoController {
     } catch (error) {
       this.logger.error(error);
       this.logger.error("TPendientess");
+      res.status(500).send(error);
     }
   }
 

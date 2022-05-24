@@ -16,15 +16,21 @@ import { UsuarioService } from './usuario/usuario.service';
 import { PedidoService } from './pedido/pedido.service';
 import { Usuario, UsuarioSchema } from './usuario/usuario.entity';
 import { Persona, PersonaSchema } from './persona/persona.entity';
-import { Rol } from './rol/rol.entity';
 import { Pedido, PedidoSchema } from './pedido/pedido.entity';
 import { Ticket, TicketSchema } from './ticket/ticket.entity';
 import { PersonaService } from './persona/persona.service';
+import { AuthModule } from './auth/auth.module';
+import { AuthService } from './auth/auth.service';
+import { JwtService } from '@nestjs/jwt';
+import { APP_GUARD } from '@nestjs/core';
+import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({
+      isGlobal:true
+    }),
     MongooseModule.forRoot(process.env.MONGO_URI),
     EstadoModule,
     RolModule,
@@ -34,7 +40,6 @@ import { PersonaService } from './persona/persona.service';
     TicketModule,
     EstadoModule,
     NotificacionModule,
-
     MongooseModule.forFeature(
       [
           {name:Usuario.name, schema:UsuarioSchema},
@@ -42,9 +47,23 @@ import { PersonaService } from './persona/persona.service';
           {name:Pedido.name,schema:PedidoSchema},
           {name:Ticket.name,schema:TicketSchema},
           {name:Persona.name,schema:PersonaSchema}
-      ])
+      ]),
+    AuthModule
   ],
   controllers: [AppController],
-  providers: [AppService, AppGateway,UsuarioService,PedidoService,TicketService,PersonaService],
+  providers: [
+    AppService, 
+    AppGateway,
+    UsuarioService,
+    PedidoService,
+    TicketService,
+    PersonaService,
+    JwtService, 
+    AuthService,
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+  ],
 })
 export class AppModule {}

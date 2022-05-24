@@ -8,6 +8,7 @@ const FileStore = require('session-file-store')(session); // Nodejs
 const bodyParser = require('body-parser');
 const nodemailer = require("nodemailer");
 
+require("dotenv").config();
 
 
 async function bootstrap() {

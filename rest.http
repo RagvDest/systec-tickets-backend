@@ -24,8 +24,12 @@ content-type: application/json
 
 {
     "password": "1234",
-    "username": "TitoGV"
+    "username": "Titusgv"
 }
+
+### Example JWT
+GET http://localhost:3000/users/profile
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwZXJzb25hX2lkIjp7Il9pZCI6IjYxZTkwMmQ4OTk2Y2M1N2I4ZGNhOTE4YSIsInBfY2VkdWxhIjoiMTMwNTQxMjMyMSIsInBfYXBlbGxpZG9zIjoiR29uemFsZXMgVmFzcXVleiIsInBfbm9tYnJlcyI6IlRpdHVzIEFsZXhhbmRlciIsIl9fdiI6MCwicF90ZWwiOiIwOTgzNDU2NTg1In0sInVfbWFpbCI6InRpdHVzYWxleEBob3RtYWlsLmNvbSIsInVfYWN0aXZvIjp0cnVlLCJ1X3VzdWFyaW8iOiJUaXR1c2d2Iiwicm9sX2lkIjp7Il9pZCI6IjYxZTdkYzIxYWVkNTkwMjczOTQ5OTYzZCIsInJfcm9sIjoiRW1wbGVhZG8iLCJfX3YiOjB9LCJzdWIiOiI2MWU5MDJkODk5NmNjNTdiOGRjYTkxOGQiLCJpYXQiOjE2NTMzNzM5MTQsImV4cCI6MTY1MzU0NjcxNH0.ej7foyMVsw_KfwP6PtlGNdIK7qKFCpG9FRqIjR3VF7I
 
 ### ROL
 
@@ -76,19 +80,20 @@ content-type: application/json
 {
     "persona":
     {
-        "p_nombres": "Renny",
-        "p_apellidos":"Gorozabel Villavicencio",
-        "p_cedula":"1305412421"
+        "p_nombres": "admin",
+        "p_apellidos":"admin",
+        "p_cedula":"1245132101"
     },
     "usuario":
     {
-        "u_usuario":"RGV",
-        "u_mail":"rennygoro@hotmail.com",
+        "u_usuario":"admin",
+        "u_mail":"rennygorozabel@gmail.com",
         "u_activo":true,
         "u_hash":"",
         "u_password":"",
-        "rol_id":"61e7dc27aed590273949963f"
-    }
+        "rol_id":"61e7dc21aed590273949963d"
+    },
+    "rol":"61e7dc21aed590273949963d"
 }
 
 ### LogIn
@@ -96,8 +101,8 @@ POST http://localhost:3000/users/log-cli
 content-type: application/json
 
 {
-    "identificacion":"1305412321",
-    "orden":"DDV-5AC-3S4"
+    "identificacion":"1305412421",
+    "orden":"G2Y-1OL-FG4"
 }
 
 ### ACTUALIZAR
@@ -129,7 +134,8 @@ GET http://localhost:3000/users/61e902d8996cc57b8dca918d
 
 ###  LISTAR
 
-GET http://localhost:3000/users/all
+GET http://localhost:3000/users/all?input=rgv&op=u&filtro=Username
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwZXJzb25hX2lkIjp7Il9pZCI6IjYxZTkwMmQ4OTk2Y2M1N2I4ZGNhOTE4YSIsInBfY2VkdWxhIjoiMTMwNTQxMjMyMSIsInBfYXBlbGxpZG9zIjoiR29uemFsZXMgVmFzcXVleiIsInBfbm9tYnJlcyI6IlRpdHVzIEFsZXhhbmRlcnIiLCJfX3YiOjAsInBfdGVsIjoiMDk4MzQ1NjU4NSJ9LCJ1X21haWwiOiJ0aXR1c2FsZXhAaG90bWFpbC5jb20iLCJ1X2FjdGl2byI6dHJ1ZSwidV91c3VhcmlvIjoidGl0dXNndiIsInJvbF9pZCI6eyJfaWQiOiI2MWU3ZGMyMWFlZDU5MDI3Mzk0OTk2M2QiLCJyX3JvbCI6IkVtcGxlYWRvIiwiX192IjowfSwic3ViIjoiNjFlOTAyZDg5OTZjYzU3YjhkY2E5MThkIiwiaWF0IjoxNjUzMzYyMDQ4LCJleHAiOjE2NTM1MzQ4NDh9.nzB7kVRJIDUEqLpFeWyomYRVjvTc2Rnj9jMlK9gbCsg
 
 ### Password (Sin Has confirm)
 POST http://localhost:3000/users/pass
@@ -252,3 +258,14 @@ GET http://localhost:3000/estado/allLast/6238cacc287d5b3d5dcaa20a
 ### Comentarios
 
 GET http://localhost:3000/estado/comentarios/623a4863ec10d1bb34a2a93d
+
+### ##### NOTIFICACIONES
+
+###
+GET http://localhost:3000/noti/all
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwZXJzb25hX2lkIjp7Il9pZCI6IjYxZTkwMmQ4OTk2Y2M1N2I4ZGNhOTE4YSIsInBfY2VkdWxhIjoiMTMwNTQxMjMyMSIsInBfYXBlbGxpZG9zIjoiR29uemFsZXMgVmFzcXVleiIsInBfbm9tYnJlcyI6IlRpdHVzIEFsZXhhbmRlciIsIl9fdiI6MCwicF90ZWwiOiIwOTgzNDU2NTg1In0sInVfbWFpbCI6InRpdHVzYWxleEBob3RtYWlsLmNvbSIsInVfYWN0aXZvIjp0cnVlLCJ1X3VzdWFyaW8iOiJUaXR1c2d2Iiwicm9sX2lkIjp7Il9pZCI6IjYxZTdkYzIxYWVkNTkwMjczOTQ5OTYzZCIsInJfcm9sIjoiRW1wbGVhZG8iLCJfX3YiOjB9LCJzdWIiOiI2MWU5MDJkODk5NmNjNTdiOGRjYTkxOGQiLCJpYXQiOjE2NTMzNzYxODQsImV4cCI6MTY1MzU0ODk4NH0.Ed6jF2-tZJe_byauY-fdHul4pGnVwnst8sWK6vl5hR8
+
+###
+GET http://localhost:3000/noti/all
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MWVlNDAzNjgwOTRkNjgxZWIxZjZmZGMiLCJwZXJzb25hX2lkIjp7Il9pZCI6IjYxZWU0MDM2ODA5NGQ2ODFlYjFmNmZkOSIsInBfY2VkdWxhIjoiMTMwNTQxMjQyMSIsInBfYXBlbGxpZG9zIjoiR29uemFsZXMgVmFycXVleiIsInBfbm9tYnJlcyI6IlJlbm8iLCJfX3YiOjB9LCJ1X21haWwiOiJyZW5vZ29uQGhvdG1haWwuY29tIiwidV9hY3Rpdm8iOnRydWUsInVfdXN1YXJpbyI6IlJHViIsInJvbF9pZCI6eyJfaWQiOiI2MWU3ZGMyN2FlZDU5MDI3Mzk0OTk2M2YiLCJyX3JvbCI6IkNsaWVudGUiLCJfX3YiOjB9LCJzdWIiOiI2MWVlNDAzNjgwOTRkNjgxZWIxZjZmZGMiLCJpYXQiOjE2NTMzNzYyMDIsImV4cCI6MTY1MzU0OTAwMn0.C8OzTNANaQKDb4v8WqkVPhVxz9YDODwKtGe036pi-os
+

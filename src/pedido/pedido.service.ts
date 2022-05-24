@@ -34,4 +34,7 @@ export class PedidoService{
         await this.usuarioModel.populate(pedidos,{path:'usuario_id',populate:{path:'persona_id'}});
         return pedidos;
     }
+    async countByEstado(param):Promise<number>{
+        return this.pedidoModel.find(param).count().exec();
+    }
 }
