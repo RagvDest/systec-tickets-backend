@@ -81,7 +81,7 @@ export class AuthService {
         payload.sub = op==='emp' ? user.id : user.user._id;
         const options:JwtSignOptions = {
             secret:process.env.JWT_SECRET,
-            expiresIn:'2 days'
+            expiresIn:'7 days'
         }
         return {
             user:user,

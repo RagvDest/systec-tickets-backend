@@ -25,6 +25,9 @@ export class UsuarioService{
     async deleteUser(id:string){
         return this.usuarioModel.findByIdAndDelete(id).exec();
     }
+    async deleteUserByQuery(query){
+        return this.usuarioModel.findOneAndDelete(query).exec();
+    }
 
     async findByID(usuario_id?):Promise<Usuario>{
         return this.usuarioModel.findById(usuario_id).exec();
@@ -44,6 +47,21 @@ export class UsuarioService{
 
     async countByMonth(param):Promise<number>{
         return this.usuarioModel.find(param).count();
+    }
+
+    async deleteByParam(param):Promise<Usuario>{
+        return this.usuarioModel.findByIdAndDelete(param).exec();
+    }
+
+    getMinMaxDateRange = (fc, anterior?) =>{
+        if(anterior)
+            fc.setMonth(fc.getMonth()-1);
+        fc.setDate(1);
+        let fcMin = fc.toISOString();
+        fc.setMonth(fc.getMonth()+1);
+        fc.setDate(0);
+        let fcMax = fc.toISOString();
+        return [fcMin, fcMax];
     }
 
     fcConvert = (fc) =>{

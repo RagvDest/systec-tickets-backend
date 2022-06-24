@@ -11,8 +11,7 @@ export class AppController {
     private readonly appService: AppService,
     private readonly userService: UsuarioService,
     private readonly ticketService: TicketService,
-    private readonly pedidoService: PedidoService,
-    private readonly personaService: PersonaService
+    private readonly pedidoService: PedidoService
     ) {}
 
   private logger:Logger = new Logger('AppController');
@@ -28,12 +27,18 @@ export class AppController {
     @Req() req
   ){
     try {
+      // Por ahora, checkear que no sea Cliente
       if( req.user.data.rol_id.r_rol === 'Cliente' ){
         res.status(401).send();
         return;
     } 
-      // Logic checkear solo Administrador
-      let mes = new Date().getMonth()+1;
+    //Conseguir mes 
+      let fecha = new Date();
+      let mes = fecha.getMonth()+1;
+
+      // Get rango del mes actual
+      let [fcMin, fcMax] = this.userService.getMinMaxDateRange(fecha);
+
       console.log(mes);
       let pedidosMes = await this.pedidoService.findByDate(
         [
@@ -43,19 +48,28 @@ export class AppController {
       );
 
       // Get Usuarios nuevos
-      let usuariosMes = await this.userService.countByMonth({u_fc_registro:mes});
-      let userMesPasado = await this.userService.countByMonth({u_fc_registro:mes>1 ?mes-1:mes});
-      let porcentaje = ((usuariosMes-userMesPasado)/userMesPasado)*100;
+      
+      let usuariosMes = await this.userService.countByMonth({u_fc_registro:{$gte:fcMin,$lte:fcMax}});
+      this.logger.debug(`Fecha: ${fcMax}`);
+
+      [fcMin, fcMax] = this.userService.getMinMaxDateRange(fecha,true);
+      let userMesPasado = await this.userService.countByMonth({u_fc_registro:{$gte:fcMin,$lte:fcMax}});
+      this.logger.debug(`Fecha: ${fcMax}`);
+      let porcentaje = usuariosMes === userMesPasado ? 0 : ((usuariosMes-userMesPasado)/userMesPasado)*100;
+      this.logger.debug(`Usuarios ahorita: ${usuariosMes}`);
+      this.logger.debug(`Usuarios antes: ${userMesPasado}`);
+      this.logger.debug(`Porcentaje: ${porcentaje}`);
 
       // Pedidos Activos
       let pActivos = await this.pedidoService.countByEstado({ped_estado:{$not:/CERRADO/}});
-
+      
+      // Tickets por Cliente
       let idPedidos = pedidosMes.map((it)=> {
         let persona = it.usuario_id.persona_id;
         return {
           id:it['_id'],
           usuario:{
-            nombres:`${persona.p_nombres} ${persona.p_apellidos}`,
+            nombres:`${persona.p_nombres}`,
             id:it.usuario_id['_id']
           }
       }
@@ -130,7 +144,6 @@ export class AppController {
         };        
       });
 
-      // Tickets por Usuarios
       
       res.send({
         totalVentas:totalVentas,
@@ -145,6 +158,7 @@ export class AppController {
       });
     } catch (error) {
       this.logger.error(`Dasboard: ${error}`);
+      res.status(500).send("Algo salió mal en el servidor");
     }
   }
 

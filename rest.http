@@ -75,6 +75,7 @@ content-type: application/json
 ### --------------USUARIOS---------
 ## CREAR
 POST http://localhost:3000/users/crear
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwZXJzb25hX2lkIjp7Il9pZCI6IjYxZTkwMmQ4OTk2Y2M1N2I4ZGNhOTE4YSIsInBfY2VkdWxhIjoiMTMwNTQxMjMyMSIsInBfYXBlbGxpZG9zIjoiR29uemFsZXMgVmFzcXVleiIsInBfbm9tYnJlcyI6IlRpdHVzIEFsZXhhbmRlciIsIl9fdiI6MCwicF90ZWwiOiIwOTgzNDU2NTg1In0sInVfbWFpbCI6InRpdHVzYWxleEBob3RtYWlsLmNvbSIsInVfYWN0aXZvIjp0cnVlLCJ1X3VzdWFyaW8iOiJUaXR1c2d2Iiwicm9sX2lkIjp7Il9pZCI6IjYxZTdkYzIxYWVkNTkwMjczOTQ5OTYzZCIsInJfcm9sIjoiRW1wbGVhZG8iLCJfX3YiOjB9LCJzdWIiOiI2MWU5MDJkODk5NmNjNTdiOGRjYTkxOGQiLCJpYXQiOjE2NTU5MjMxNTEsImV4cCI6MTY1NjUyNzk1MX0.C_6QV03q8_k3i74dNtUHz6RfK00aw9JJ6Ul0U5RocD0
 content-type: application/json
 
 {
@@ -108,19 +109,20 @@ content-type: application/json
 ### ACTUALIZAR
 
 PATCH  http://localhost:3000/users/update/61e902d8996cc57b8dca918d
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwZXJzb25hX2lkIjp7Il9pZCI6IjYxZTkwMmQ4OTk2Y2M1N2I4ZGNhOTE4YSIsInBfY2VkdWxhIjoiMTMwNTQxMjMyMSIsInBfYXBlbGxpZG9zIjoiR29uemFsZXMgVmFzcXVleiIsInBfbm9tYnJlcyI6IlRpdHVzIEFsZXhhbmRlciIsIl9fdiI6MCwicF90ZWwiOiIwOTgzNDU2NTg1In0sInVfbWFpbCI6InRpdHVzYWxleEBob3RtYWlsLmNvbSIsInVfYWN0aXZvIjp0cnVlLCJ1X3VzdWFyaW8iOiJUaXR1c2d2Iiwicm9sX2lkIjp7Il9pZCI6IjYxZTdkYzIxYWVkNTkwMjczOTQ5OTYzZCIsInJfcm9sIjoiRW1wbGVhZG8iLCJfX3YiOjB9LCJzdWIiOiI2MWU5MDJkODk5NmNjNTdiOGRjYTkxOGQiLCJpYXQiOjE2NTU5MjMxNTEsImV4cCI6MTY1NjUyNzk1MX0.C_6QV03q8_k3i74dNtUHz6RfK00aw9JJ6Ul0U5RocD0
 content-type: application/json
 
 {
     "persona":
     {
-        "p_nombres": "Tito Joses",
+        "p_nombres": "Tito Jose",
         "p_apellidos":"Gorozabel Villavicencio",
         "p_cedula":"1305412321",
         "p_tel":"0983456585"
     },
     "usuario":
     {
-        "u_usuario":"TitoGV",
+        "u_usuario":"TitusGV1",
         "u_mail":"titojoses@hotmail.com",
         "u_activo":true,
         "u_hash":"",
@@ -131,11 +133,12 @@ content-type: application/json
 ###  CONSULTAR INFO
 
 GET http://localhost:3000/users/61e902d8996cc57b8dca918d
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwZXJzb25hX2lkIjp7Il9pZCI6IjYxZTkwMmQ4OTk2Y2M1N2I4ZGNhOTE4YSIsInBfY2VkdWxhIjoiMTMwNTQxMjMyMSIsInBfYXBlbGxpZG9zIjoiR29uemFsZXMgVmFzcXVleiIsInBfbm9tYnJlcyI6IlRpdHVzIEFsZXhhbmRlciIsIl9fdiI6MCwicF90ZWwiOiIwOTgzNDU2NTg1In0sInVfbWFpbCI6InRpdHVzYWxleEBob3RtYWlsLmNvbSIsInVfYWN0aXZvIjp0cnVlLCJ1X3VzdWFyaW8iOiJUaXR1c2d2Iiwicm9sX2lkIjp7Il9pZCI6IjYxZTdkYzIxYWVkNTkwMjczOTQ5OTYzZCIsInJfcm9sIjoiRW1wbGVhZG8iLCJfX3YiOjB9LCJzdWIiOiI2MWU5MDJkODk5NmNjNTdiOGRjYTkxOGQiLCJpYXQiOjE2NTU5MjMxNTEsImV4cCI6MTY1NjUyNzk1MX0.C_6QV03q8_k3i74dNtUHz6RfK00aw9JJ6Ul0U5RocD0
 
 ###  LISTAR
 
-GET http://localhost:3000/users/all?input=rgv&op=u&filtro=Username
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwZXJzb25hX2lkIjp7Il9pZCI6IjYxZTkwMmQ4OTk2Y2M1N2I4ZGNhOTE4YSIsInBfY2VkdWxhIjoiMTMwNTQxMjMyMSIsInBfYXBlbGxpZG9zIjoiR29uemFsZXMgVmFzcXVleiIsInBfbm9tYnJlcyI6IlRpdHVzIEFsZXhhbmRlcnIiLCJfX3YiOjAsInBfdGVsIjoiMDk4MzQ1NjU4NSJ9LCJ1X21haWwiOiJ0aXR1c2FsZXhAaG90bWFpbC5jb20iLCJ1X2FjdGl2byI6dHJ1ZSwidV91c3VhcmlvIjoidGl0dXNndiIsInJvbF9pZCI6eyJfaWQiOiI2MWU3ZGMyMWFlZDU5MDI3Mzk0OTk2M2QiLCJyX3JvbCI6IkVtcGxlYWRvIiwiX192IjowfSwic3ViIjoiNjFlOTAyZDg5OTZjYzU3YjhkY2E5MThkIiwiaWF0IjoxNjUzMzYyMDQ4LCJleHAiOjE2NTM1MzQ4NDh9.nzB7kVRJIDUEqLpFeWyomYRVjvTc2Rnj9jMlK9gbCsg
+GET http://localhost:3000/users/all?input=admin&op=p&filtro=Nombres
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwZXJzb25hX2lkIjp7Il9pZCI6IjYxZTkwMmQ4OTk2Y2M1N2I4ZGNhOTE4YSIsInBfY2VkdWxhIjoiMTMwNTQxMjMyMSIsInBfYXBlbGxpZG9zIjoiR29uemFsZXMgVmFzcXVleiIsInBfbm9tYnJlcyI6IlRpdHVzIEFsZXhhbmRlciIsIl9fdiI6MCwicF90ZWwiOiIwOTgzNDU2NTg1In0sInVfbWFpbCI6InRpdHVzYWxleEBob3RtYWlsLmNvbSIsInVfYWN0aXZvIjp0cnVlLCJ1X3VzdWFyaW8iOiJUaXR1c2d2Iiwicm9sX2lkIjp7Il9pZCI6IjYxZTdkYzIxYWVkNTkwMjczOTQ5OTYzZCIsInJfcm9sIjoiRW1wbGVhZG8iLCJfX3YiOjB9LCJzdWIiOiI2MWU5MDJkODk5NmNjNTdiOGRjYTkxOGQiLCJpYXQiOjE2NTU5MjMxNTEsImV4cCI6MTY1NjUyNzk1MX0.C_6QV03q8_k3i74dNtUHz6RfK00aw9JJ6Ul0U5RocD0
 
 ### Password (Sin Has confirm)
 POST http://localhost:3000/users/pass

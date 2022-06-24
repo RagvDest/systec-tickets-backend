@@ -25,13 +25,17 @@ import { JwtService } from '@nestjs/jwt';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 
+let {MONGO_URI, MONGO_URI_TEST, NODE_ENV} = process.env;
+
+let mongo_uri = NODE_ENV === 'test' ? MONGO_URI_TEST : MONGO_URI;
+
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal:true
     }),
-    MongooseModule.forRoot(process.env.MONGO_URI),
+    MongooseModule.forRoot(mongo_uri),
     EstadoModule,
     RolModule,
     PersonaModule,
@@ -62,8 +66,9 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
     AuthService,
     {
       provide: APP_GUARD,
-      useClass: JwtAuthGuard,
+      useExisting: JwtAuthGuard,
     },
+    JwtAuthGuard
   ],
 })
 export class AppModule {}

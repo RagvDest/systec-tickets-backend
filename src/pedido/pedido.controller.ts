@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Logger, Param, Patch, Post, Query, Req, Res } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Logger, Param, Patch, Post, Query, Req, Res } from '@nestjs/common';
 import { UsuarioService } from 'src/usuario/usuario.service';
 import { PedidoCreateDto } from './dto/pedido.create.dto';
 import { Pedido} from './pedido.entity';
@@ -56,8 +56,7 @@ export class PedidoController {
 
       const errores = await validate(ped);
       if(errores.length>0){
-        console.error(errores);
-        res.send({errores:errores});
+        res.status(400).send({errores:errores});
       }else{
         let tickets:Ticket[];
         if(pedido.ped_estado=='CERRADO'){
@@ -109,8 +108,7 @@ export class PedidoController {
 
         const errores = await validate(pedidoDto);
         if(errores.length>0){
-          console.error(errores);
-          res.send({errores:errores});
+          res.status(400).send("Error al registrar pedido con esos datos");
         }else{
             const pedidoCreado = await this.pedidoService.create(pedido);
             res.send({pedidoCreado: pedidoCreado});
@@ -132,6 +130,7 @@ export class PedidoController {
       @Query('estado') estado?
   ) {
     let param;
+
     try {
       let results;
       if(req.user.data.rol_id.r_rol==='Cliente'){
@@ -153,10 +152,9 @@ export class PedidoController {
         }else if(filtro=='Cédula'){
           param = {p_cedula:{ $regex: '.*' + input + '.*', $options:'i' }}
         }
+        
         results = await this.llenarDatos(param,orden,estado);
         
-        
-
         res.status(200).send({results:results});
       }
     } catch (error) {
@@ -182,6 +180,25 @@ export class PedidoController {
       res.send(result);
     } catch (error) {
       this.logger.error("GetInfoPedido: "+error);
+      res.status(500).send(error);
+    }
+  }
+
+  @Delete('/del/:idPedido')
+  async eliminarPedido(
+    @Req() req,
+    @Res() res,
+    @Param('idPedido') idPedido
+  ){
+    try {
+      if(req.user.data.rol_id.r_rol==='Cliente'){
+        res.status(401).send();
+        return;
+    } 
+    let pedidoEliminado = await this.pedidoService.deleteById(idPedido);
+    res.status(200).send(pedidoEliminado);
+    } catch (error) {
+      this.logger.error(`Error eliminando: ${error}`);
       res.status(500).send(error);
     }
   }

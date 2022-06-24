@@ -14,10 +14,6 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
     @WebSocketServer() server: Server;
     private logger:Logger = new Logger('AppGateway');
 
-    private users = new Map();
-
-    
-
     @SubscribeMessage('connected')
     handleConnected(client: Socket, payload:string):void {
         this.logger.log(`Client whit ID ${payload} registered`);
@@ -41,10 +37,8 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
         this.logger.log("Evento nueva notificación");
         let id = payload.usuario_id;
         let eventName = 'getNotificationFromServer';
-        let mensaje = `${payload.n_tipo} en el ${payload.n_documento} con código: ${payload.n_codigo}`;
-        console.log(id);
-        console.log(eventName);
-        console.log(mensaje);
+        let mensaje = 
+        `${payload.n_tipo} en el ${payload.n_documento} con código: ${payload.n_codigo}`;
         client.to(id).emit(eventName,mensaje);
     }
 
@@ -53,7 +47,7 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
     }
 
     handleDisconnect(client: Socket) {
-        this.users.delete(client);
+//        client.leave(client.id);
         this.logger.log(`Client disconnected: ${client.id}`)
     }
 

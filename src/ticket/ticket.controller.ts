@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, ForbiddenException, Get, Logger, Param, Patch, Post, Req, Res } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, ForbiddenException, Get, Logger, Param, Patch, Post, Req, Res } from '@nestjs/common';
 import { Ticket} from './ticket.entity';
 import { validate } from 'class-validator';
 import { TicketService } from './ticket.service';
@@ -30,6 +30,7 @@ export class TicketController {
     @Param('idTicket') idTicket?
   ){
     try {
+      console.log(ticket);
       if(req.user.data.rol_id.r_rol==='Cliente'){
         res.status(401).send();
         return;
@@ -48,6 +49,12 @@ export class TicketController {
       tick.id_ticket = ticketEncontrado;
 
       const errores = await validate(tick);
+      if(ticket.t_total<0 || ticket.t_abono<0){
+        this.logger.error("Valores numericos invalidos")
+        res.status(400).send("Valores numericos invalidos");
+        return;
+      }
+
       if(errores.length>0){
         console.error(errores);
         res.send({errores:errores});
@@ -110,7 +117,7 @@ export class TicketController {
         const errores = await validate(ticketDto);
         if(errores.length>0){
           console.error(errores);
-          res.send({errores:errores});
+          res.status(400).send("Error al registrar ticket con los datos proporcionados");;
         }else{
 
           console.log("Ticket creado: "+ticket.t_num+" - Pedido: "+id_pedido);
@@ -123,8 +130,16 @@ export class TicketController {
             res.send({ticketCreado: ticketCreado,notificacion:notifi});
         }
       } catch (error) {
+        let code = 500, message = "Error al buscar registros";
+        switch (error.name){
+          case "CastError":{
+            code=400;
+            message="Pedido inválido"
+            break;
+          }
+        }
         this.logger.error(error);
-        res.status(error.status).send(error.response);
+        res.status(code).send(message);
       }
   }
   @Get('all/:idPedido')
@@ -133,7 +148,6 @@ export class TicketController {
       @Param('idPedido') idPedido
   ) {
     try {
-      
       const tickets = await this.ticketService.find({pedido_id:idPedido});
       const pedido = await this.pedidoService.findByID(idPedido);
       const usuario = await this.usuarioService.findByID(pedido.usuario_id);
@@ -144,9 +158,31 @@ export class TicketController {
       }
       res.send({results:completo});
     } catch (error) {
+      let code = 500, message = "Error al buscar registros";
+      switch (error.name){
+        case "CastError":{
+          code=400;
+          message="Pedido inválido"
+          break;
+        }
+      }
       this.logger.error(`Find Tickets By Pedido: ${error}`);
-      res.status(500).send(error);
+      res.status(code).send(message);
     }
+  }
+
+  @Delete('del/:idTicket')
+  async eliminarTicket(
+    @Req() req,
+    @Res() res,
+    @Param('idTicket') idTicket
+  ){
+    if(req.user.data.rol_id.r_rol==='Cliente'){
+      res.status(401).send();
+      return;
+    } 
+    let ticketEliminado = await this.ticketService.deleteByID(idTicket);
+    res.send(ticketEliminado);
   }
 
 }

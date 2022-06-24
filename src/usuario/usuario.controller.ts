@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Delete, Get, Headers, Logger, Param, Patch, Post, Query, Req, Res, UseGuards} from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Headers, HttpException, HttpStatus, Logger, Param, Patch, Post, Query, Req, Res, UseGuards} from '@nestjs/common';
 import { PersonaCreateDto } from 'src/persona/dto/persona.create.dto';
 import { Persona } from 'src/persona/persona.entity';
 import { UsuarioCreateDto } from './dto/usuario.create.dto';
@@ -16,6 +16,7 @@ import { AuthService } from 'src/auth/auth.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { Public } from 'src/auth/constants';
 import { LocalCliAuthGuard } from 'src/auth/guards/local-cli-auth.guard';
+import { LocalMockAuthGuard } from 'src/auth/guards/local-mock-emp-auth.guard';
 
 var capitalize = require('capitalize')
 const bcrypt = require('bcryptjs');
@@ -239,14 +240,39 @@ export class UsuarioController{
         }
     }
 
-    /*@Delete('del/:idUsuario')
+    @Delete('del/:idUsuario')
     async eliminarUsuarioID(
         @Res() res,
+        @Req() req,
         @Param('idUsuario') idUsuario:string
     ){
+        if(req.user.data.rol_id.r_rol==='Cliente'){
+            res.status(401).send();
+            return;
+        } 
         const eliminado = await this._usuarioServices.deleteUser(idUsuario);
         res.send({eliminado})
-    }*/
+    }
+
+    @Delete('delete')
+    async eliminarPorQuery(
+        @Res() res,
+        @Req() req,
+        @Query('mail') mail
+    ){
+        try {
+            if(req.user.data.rol_id.r_rol==='Cliente'){
+                res.status(401).send();
+                return;
+            }
+            const eliminado = await this._usuarioServices.deleteUserByQuery({u_mail:mail});
+            const pEliminado = await this._personaServices.deletePerson(eliminado.persona_id);
+            res.send({eliminado:eliminado.u_mail});
+        } catch (error) {
+            this.logger.error('Eliminar x Query: '+error);
+            res.status(500);
+        }
+    }
 
    
 
@@ -259,6 +285,7 @@ export class UsuarioController{
         @Req() req
     ){
         var id_persona;
+        let usuarioCreado;
         try {
             if(req.user.data.rol_id.r_rol==='Cliente'){
                 res.status(401).send();
@@ -269,7 +296,6 @@ export class UsuarioController{
             usuario.u_usuario = usuario.u_usuario.toLowerCase();
             usuario.u_mail = usuario.u_mail.toLowerCase();
             usuario.u_fc_registro = new Date();
-            console.log(rol);
             const rol_id = await this._rolServices.findByID(rol);
             usuario.rol_id = rol_id;
             
@@ -287,7 +313,7 @@ export class UsuarioController{
                 res.send({errores:errores});
             }else{
                 usuario.u_activo = false;
-                let usuarioCreado = await this._usuarioServices.create(usuario);
+                usuarioCreado = await this._usuarioServices.create(usuario);
                 if(rol_id.r_rol==='Empleado'){
                     var dateHash = new Date();
                     var dateFormated = this._usuarioServices.fcConvert(dateHash);
@@ -304,19 +330,33 @@ export class UsuarioController{
             }
         } catch (error) {
             this.logger.error("Error Crear Usuario: "+error);
+            let code = 500;
+            switch (error.code){
+                case 11000:{
+                    code=400
+                    break;
+                }
+            }
+
             // Eliminar persona
-            await this._personaServices.deletePerson(id_persona['_id']);
-            res.status(500).send(error);
+            if(id_persona!==undefined){
+                await this._personaServices.deletePerson(id_persona['_id']);
+                if(usuarioCreado!==undefined)
+                    await this._usuarioServices.deleteByParam({persona_id:id_persona['_id']});
+            }else{
+                code = 400
+            }
+            res.status(code).send('Error al crear usuario con esos datos');
         }
     }
 
-    @Post('test')
-    async testFechaHash(){
-        var dateHash = new Date();
-        var dateFormated = this._usuarioServices.fcConvert(dateHash);
-        console.log(dateFormated);
-        var hasheado = await bcrypt.hash(dateFormated, saltRounds);
-        console.log(hasheado);
+    @Post('test/:idP')
+    async testFechaHash(
+        @Body('persona') p,
+        @Param('idP') idP
+    ){
+        const personaActualizada = await this._personaServices.updateByID(idP,p);
+        return personaActualizada;
     }
 
     @Get(':idUsuario')
@@ -342,11 +382,17 @@ export class UsuarioController{
     @Patch('update/:idUsuario')
     async actualizarUsuario(
         @Res() res,
+        @Req() req,
         @Body('usuario') usuario:Usuario,
         @Body('persona') persona:Persona,
         @Param('idUsuario') idUsuario?
     ){
         var idPersona;
+        if(req.user.data.rol_id.r_rol==='Cliente' &&
+        req.user.data._id !== idUsuario){
+            res.status(401).send();
+            return;
+        } 
         try {
             const usuarioEncontrado = await this._usuarioServices.findByID(idUsuario);
             if(usuarioEncontrado==null){
@@ -365,7 +411,6 @@ export class UsuarioController{
             person.p_nombres = persona.p_nombres;
             person.p_apellidos = persona.p_apellidos;
 
-            
             const erroresUser = await validate(user);
             const erroresPerson = await validate(person);
 
@@ -374,10 +419,14 @@ export class UsuarioController{
                 console.error(erroresPerson);
                 res.send({errores_usuario:erroresUser, errores_persona:erroresPerson});
             }else{
-                console.log(usuarioEncontrado.persona_id)
+                persona.p_apellidos = persona.p_apellidos.toLowerCase();
+                persona.p_nombres = persona.p_nombres.toLowerCase();
+
+                usuario.u_usuario = usuario.u_usuario.toLowerCase();
+
                 const personaActualizada = await this._personaServices.updateByID(idPersona,persona);
                 const usuarioActualizado = await this._usuarioServices.updateByID(usuarioEncontrado['_id'],usuario);
-                res.send({usuario:usuarioActualizado,persona:personaActualizada});
+                res.send({usuario:Object.assign(usuarioActualizado,usuario),persona:Object.assign(personaActualizada,persona)});
             }
         } catch (error) {
             this.logger.error(`Update Person: ${error}`);
@@ -437,14 +486,15 @@ export class UsuarioController{
 
             if(errores.length>0){
                 console.error(errores);
-                res.send({errores:errores});
+                throw new HttpException(JSON.stringify(errores),HttpStatus.INTERNAL_SERVER_ERROR);
             }else{
                 const personaCreada = await this._personaServices.crear(persona);
                 return personaCreada;
             }
         } catch (error) {
+            console.log(error);
             this.logger.error(`Crear Persona Met: ${error}`);
-            res.status(500).send(error);
+            throw new HttpException('Campos incorrectos',HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -490,8 +540,6 @@ export class UsuarioController{
                 results.push(completo);
             }
         }
-        console.log('Results: '+JSON.stringify(results));
-
         return results;
     }
 

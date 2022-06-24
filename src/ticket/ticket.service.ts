@@ -33,4 +33,10 @@ export class TicketService{
     async countTickets(param):Promise<number>{
         return this.ticketModel.countDocuments(param).exec();
     }
+    async findAll():Promise<Ticket[]>{
+        return this.ticketModel.find().exec();
+    }
+    async deleteByID(id):Promise<Ticket>{
+        return this.ticketModel.findByIdAndDelete(id).exec();
+    }
 }
