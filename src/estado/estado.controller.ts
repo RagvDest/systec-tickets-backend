@@ -1,10 +1,12 @@
-import { Body, Controller, Get, HttpException, Param, Patch, Post, Req, Res, Session } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpException, Logger, Param, Patch, Post, Req, Res, Session } from "@nestjs/common";
 import { validate } from 'class-validator';
 import { Notificacion } from "src/notificacion/notificacion.entity";
 import { NotificacionService } from "src/notificacion/notificacion.service";
 import { RolService } from "src/rol/rol.service";
 import { TicketService } from "src/ticket/ticket.service";
+import { isDeepStrictEqual } from "util";
 import { Comentario } from "./comentario.entity";
+import { ComentarioCreateDto } from "./dto/comentario.create.dto";
 import { EstadoCreateDto } from "./dto/estado.create.dto";
 import { EstadoUpdateDto } from "./dto/estado.update.dto";
 import { Estado } from "./estado.entity";
@@ -17,6 +19,8 @@ export class EstadoController {
     private readonly estadoService: EstadoService,
     private readonly rolService:RolService,
     private readonly notiService:NotificacionService) {}
+
+    private logger:Logger = new Logger('EstadoController');
 
     @Post('crear')
     async crearEstado(
@@ -33,8 +37,8 @@ export class EstadoController {
             } 
             ticket = await this.ticketService.findByID(id_ticket);
             if(ticket==null){
-                res.status(400).send({error:'Ticket no existe'});
-                throw new Error('Ticket no existe');
+                res.status(400).send('Ticket no existe');
+                return;
             }
             let param = {ticket_id:id_ticket};
             let lastEstado = await this.estadoService.findLast(param);
@@ -53,8 +57,8 @@ export class EstadoController {
             
             if(errores.length>0){
                 console.error(errores);
-                res.status(400).send({errores:errores});
-                throw new Error('Errores en validación');
+                res.status(400).send("Errores en validación");
+                return ;
             }
             const estadoCreado = await this.estadoService.create(estado);
             const ticketAc = await this.ticketService.updateEstado(ticket["_id"],estado.e_nombre);
@@ -67,9 +71,17 @@ export class EstadoController {
 
             res.send({estado:estadoCreado,ticket:ticketAc,notificacion:notifiCreada});
         } catch (error) {
-            console.error("Crear Estado: "+error);
-            res.status(500).send(error);
-        } 
+            let code = 500, message = "Error registrar con los datos proporcionados";
+            switch (error.name){
+                case "CastError":{
+                    code=400;
+                    message="Datos inválido"
+                    break;
+                }
+            }
+            this.logger.error(error);
+            res.status(code).send(message);
+        }
     }
 
     @Patch('update/:idEstado')
@@ -86,6 +98,7 @@ export class EstadoController {
                 res.status(400).send({error:'Estado no existe'});
                 throw new Error('Estado no encontrado');
             }
+
             const estadoDto = new EstadoUpdateDto();
             estadoDto.e_nombre = estado.e_nombre;
             estadoDto.e_detalle = estado.e_detalle;
@@ -94,13 +107,20 @@ export class EstadoController {
             estadoDto.id_ticket = estado.ticket_id;
             estadoDto.tecnico_id = estado.user_id;
 
+            const comentarioDto = new ComentarioCreateDto();
+            comentarioDto.c_detalle = comentario.c_detalle;
+            comentarioDto.c_usuario = comentario.c_usuario;
+            comentarioDto.user_id = comentario.user_id;
+
             estado.e_comentarios.push(comentario);
+            
 
             const errores = await validate(estadoDto);
-            if(errores.length>0){
+            const erroresComent = await validate(comentarioDto);
+            if(errores.length>0 || erroresComent.length>0){
                 console.error(errores);
-                res.status(400).send({errores:errores});
-                throw new Error('Errores en validación');
+                res.status(400).send('Datos inválidos');
+                return;
             }
             const estadoActualizado = await this.estadoService.updateByID(estadoEncontrado['_id'],estado);
 
@@ -108,10 +128,18 @@ export class EstadoController {
                 req.user.data.rol_id,estado.user_id,
                 estado.ticket_id,estadoEncontrado.ticket_id.pedido_id);
 
-            res.send({estado:estadoActualizado, comentario:comentario,notificacion:notifi});            
+            res.send({estado:Object.assign(estadoActualizado, estado), comentario:comentario,notificacion:notifi});            
         } catch (error) {
-            console.error("Error: "+error);
-            res.status(500).send(error);
+            let code = 500, message = "Error registrar con los datos proporcionados";
+            switch (error.name){
+                case "CastError":{
+                    code=400;
+                    message="Datos inválido"
+                    break;
+                }
+            }
+            this.logger.error(error);
+            res.status(code).send(message);
         }
     }
 
@@ -125,7 +153,7 @@ export class EstadoController {
             res.send({estado:estadosEncontrado,ticket:null});
         } catch (error) {
             console.error(error);
-            res.status(500).send(error);
+            res.status(400).send(error);
         }
     }
 
@@ -145,6 +173,25 @@ export class EstadoController {
         } catch (error) {
             console.error(error);
             res.status(500).send(error);
+        }
+    }
+
+    @Delete('del/:idEstado')
+    async eliminarEstado(
+        @Res() res,
+        @Req() req,
+        @Param('idEstado') idEstado
+    ){
+        try {
+            if(req.user.data.rol_id.r_rol==='Cliente'){
+                res.status(401).send();
+                return;
+            } 
+            let estadoEliminado = await this.estadoService.deleteEstado(idEstado);
+            res.status(200).send(estadoEliminado);
+        } catch (error) {
+            this.logger.error('Delete: '+error);
+            res.status(500).send('Error eliminando registro');
         }
     }
 

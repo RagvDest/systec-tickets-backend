@@ -6,7 +6,7 @@ import { LocalMockAuthGuard } from "src/auth/guards/local-mock-emp-auth.guard";
 import { AppModule } from "src/app.module";
 import { Ticket } from "src/ticket/ticket.entity";
 
-describe('Tickets', () => {
+describe.skip('Tickets', () => {
     let app: INestApplication;
 
     let initialLength = 1;
