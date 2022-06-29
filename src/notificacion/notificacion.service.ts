@@ -8,11 +8,19 @@ export class NotificacionService{
     constructor(@InjectModel(Notificacion.name) private notificacionModel:Model<Notificacion>){}
 
     async find(param?):Promise<Notificacion[]>{
-        return this.notificacionModel.find(param).sort({n_fc_creado:'desc'}).exec();
+        return await this.notificacionModel.find(param).populate({path:'usuario_id'}).sort({n_fc_creado:'desc'}).exec();
     }
     async create(notificacion:Notificacion):Promise<Notificacion>{
         let noti = new this.notificacionModel(notificacion);
-        return noti.save();
+        return await noti.save();
+    }
+
+    async updateAll(filtro,param){
+        return await this.notificacionModel.updateMany(filtro,param);
+    }
+
+    async deleteAll(){
+        return await this.notificacionModel.deleteMany().exec();
     }
 
     async generateNotifi(docu,cod,tipo,userId,pedido){

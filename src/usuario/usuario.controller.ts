@@ -52,7 +52,8 @@ export class UsuarioController{
       try {
         let user = await this._usuarioServices.findByPersonaID({u_mail:mail});
         if(user==null){
-            res.status(200).send({});
+            res.status(400).send('No existe usuario');
+            return;
         }
         const id_persona = user.persona_id;
         var dateHash = new Date();
@@ -204,7 +205,8 @@ export class UsuarioController{
         else if(filtro == 'Cédula')
             param = {p_cedula:{ $regex: '.*' + input + '.*', $options:'i' }}
         try {
-            const results = await this.llenarDatos(op,param);    
+            let rol = req.user.data.rol_id.r_rol === 'Empleado' ? 'emp' : 'all';
+            const results = await this.llenarDatos(op,rol,param);    
             res.send({results:results});
         } catch (error) {
             this.logger.error("Find Users: "+error)
@@ -273,8 +275,41 @@ export class UsuarioController{
             res.status(500);
         }
     }
-
-   
+    
+    @Post('postPlan')
+    async postPlanDev(
+        @Req() req,
+        @Res() res,
+        @Body('usuario') usuario:Usuario,
+        @Body('persona') persona:Persona
+    ){
+        try {
+            if(req.user.data.rol_id.r_rol==='Cliente'){
+                res.status(401).send();
+                return;
+            }
+            let creado = await this.crearPersona(res,persona);
+            usuario.persona_id = creado;
+            usuario.u_fc_registro = new Date();
+            let rol = await this._rolServices.findOne({r_rol:'Administrador'});
+            usuario.rol_id = rol;
+            let sirCreated = await this._usuarioServices.create(usuario);
+            var dateHash = new Date();
+            var dateFormated = this._usuarioServices.fcConvert(dateHash);
+            console.log(dateFormated);
+            var hasheado = await bcrypt.hash(dateFormated, saltRounds);
+            hasheado = hasheado.replace("/","");
+            sirCreated.u_hash = hasheado;
+            sirCreated = await this._usuarioServices.updateByID(sirCreated['_id'],sirCreated);
+            await this.generarPassword(
+                hasheado,sirCreated['_id'],
+                sirCreated.u_mail,'Admin');
+            res.status(201).send(sirCreated);
+        } catch (error) {
+            this.logger.error(`Error PostPlan: ${error}`);
+            res.status(500).send('Error del servidor, comuniquese con el personal técnico.')
+        }
+    }
 
     @Post('crear')
     async crearUsuario(
@@ -296,7 +331,9 @@ export class UsuarioController{
             usuario.u_usuario = usuario.u_usuario.toLowerCase();
             usuario.u_mail = usuario.u_mail.toLowerCase();
             usuario.u_fc_registro = new Date();
-            const rol_id = await this._rolServices.findByID(rol);
+            console.log(capitalize(rol));
+            const rol_id = await this._rolServices.findOne({r_rol:capitalize(rol)});
+            console.log(rol_id);
             usuario.rol_id = rol_id;
             
             //Validacion DTO
@@ -310,7 +347,8 @@ export class UsuarioController{
 
             if(errores.length>0){
                 console.error(errores);
-                res.send({errores:errores});
+                res.status(400).send('Error validación de campos');
+                return;
             }else{
                 usuario.u_activo = false;
                 usuarioCreado = await this._usuarioServices.create(usuario);
@@ -346,7 +384,7 @@ export class UsuarioController{
             }else{
                 code = 400
             }
-            res.status(code).send('Error al crear usuario con esos datos');
+            res.status(code).send('Error al crear usuario con los datos proporcionados');
         }
     }
 
@@ -486,7 +524,7 @@ export class UsuarioController{
 
             if(errores.length>0){
                 console.error(errores);
-                throw new HttpException(JSON.stringify(errores),HttpStatus.INTERNAL_SERVER_ERROR);
+                throw new HttpException('Error en validación de campos',HttpStatus.BAD_REQUEST);
             }else{
                 const personaCreada = await this._personaServices.crear(persona);
                 return personaCreada;
@@ -500,6 +538,7 @@ export class UsuarioController{
 
     async llenarDatos(
         op:string,
+        rol,
         param?
     ){
         const results =[];
@@ -531,7 +570,8 @@ export class UsuarioController{
                     username:{},
                     persona:{}
                 };
-                usuario = await this._usuarioServices.findByPersonaID({persona_id:personas[i]._id});
+                let paramPersona = {persona_id:personas[i]._id};
+                usuario = await this._usuarioServices.findByPersonaID(paramPersona);
                 usuario.u_usuario=capitalize.words(usuario.u_usuario);
                 personas[i].p_apellidos = capitalize.words(personas[i].p_apellidos);
                 personas[i].p_nombres = capitalize.words(personas[i].p_nombres);

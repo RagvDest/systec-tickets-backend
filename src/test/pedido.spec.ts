@@ -6,7 +6,7 @@ import { LocalMockAuthGuard } from "src/auth/guards/local-mock-emp-auth.guard";
 import { AppModule } from "src/app.module";
 
 
-describe.skip('Pedidos', () => {
+describe('Pedidos', () => {
     let app: INestApplication;
 
     let initialLength = 15;
@@ -37,7 +37,7 @@ describe.skip('Pedidos', () => {
     });
 
 
-    it.skip(`/POST buscarPedidos sin filtro`, async () => {
+    it(`/POST buscarPedidos sin filtro`, async () => {
       const response = await request(app.getHttpServer())
         .post('/pedido/all')
         .set('Authorization', 'Bearer '+process.env.TOKEN_TEST)
@@ -45,7 +45,7 @@ describe.skip('Pedidos', () => {
       expect(response.body.results).toHaveLength(initialLength);
     });
 
-    it.skip(`/POST buscarPedidos filtro nombres`, async () => {
+    it(`/POST buscarPedidos filtro nombres`, async () => {
       const response = await request(app.getHttpServer())
         .post('/pedido/all?input=titus&filtro=Nombres')
         .set('Authorization', 'Bearer '+process.env.TOKEN_TEST)
@@ -69,7 +69,7 @@ describe.skip('Pedidos', () => {
       expect(response.body.results).toHaveLength(0);
     });
     
-    it(`/POST Crear Pedido CLIENTE`, async () => {
+    it(`/POST Crear Pedido`, async () => {
 
       const response = await request(app.getHttpServer())
         .post('/pedido/crear')
@@ -110,6 +110,15 @@ describe.skip('Pedidos', () => {
         .send(pedidoActualizado)
       expect(response.status).toBe(200);
       expect(response.body.pedido.ped_fc_fin).toBe(fc_fin.toISOString());
+    });
+
+    it(`/GET Conseguir trabajos pendientes (Pedidos Abiertos)`, async () =>{
+      const response = await request(app.getHttpServer())
+        .get('/pedido/tpendiente')
+        .set('Authorization', 'Bearer '+process.env.TOKEN_TEST)
+        .set('Content-Type','application/json')
+      expect(response.status).toBe(200);
+      expect(response.body).toBeTruthy();
     });
 
     afterAll(async () => {

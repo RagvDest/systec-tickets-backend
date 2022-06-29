@@ -10,6 +10,9 @@ export class RolService{
     async findAll(param?):Promise<Rol[]>{
         return this.rolModel.find(param).exec();
     }
+    async findOne(param):Promise<Rol>{
+        return this.rolModel.findOne(param).exec();
+    }
     async findByID(id?):Promise<Rol>{
         return this.rolModel.findById(id).exec();
     }

@@ -57,7 +57,7 @@ export class EstadoController {
             
             if(errores.length>0){
                 console.error(errores);
-                res.status(400).send("Errores en validación");
+                res.status(400).send("Error registrar con los datos proporcionados");
                 return ;
             }
             const estadoCreado = await this.estadoService.create(estado);

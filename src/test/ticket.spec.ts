@@ -6,7 +6,7 @@ import { LocalMockAuthGuard } from "src/auth/guards/local-mock-emp-auth.guard";
 import { AppModule } from "src/app.module";
 import { Ticket } from "src/ticket/ticket.entity";
 
-describe.skip('Tickets', () => {
+describe('Tickets', () => {
     let app: INestApplication;
 
     let initialLength = 1;
@@ -75,7 +75,7 @@ describe.skip('Tickets', () => {
       body.ticket.t_num=response.body.ticketCreado.t_num;
     });
 
-    it.skip(`/POST crear Ticket sin campo obligatorio`, async () => {
+    it(`/POST crear Ticket sin campo obligatorio`, async () => {
         let json = body;
         t_detalle = json.ticket.t_detalle;
         delete json.ticket.t_detalle;
@@ -91,7 +91,7 @@ describe.skip('Tickets', () => {
         body.ticket.t_detalle = t_detalle;
     });
 
-    it.skip(`/POST crear Ticket con Pedido invalido`, async () => {
+    it(`/POST crear Ticket con Pedido invalido`, async () => {
         let json = body;
         json.id_pedido="424d49e60eb3e0abc28574e";
         const response = await request(app.getHttpServer())

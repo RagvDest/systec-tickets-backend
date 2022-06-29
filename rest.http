@@ -94,7 +94,7 @@ content-type: application/json
         "u_password":"",
         "rol_id":"61e7dc21aed590273949963d"
     },
-    "rol":"61e7dc21aed590273949963d"
+    "rol":"EMPLEADO"
 }
 
 ### LogIn
@@ -137,8 +137,8 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwZXJzb25hX2lkIjp7I
 
 ###  LISTAR
 
-GET http://localhost:3000/users/all?input=admin&op=p&filtro=Nombres
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwZXJzb25hX2lkIjp7Il9pZCI6IjYxZTkwMmQ4OTk2Y2M1N2I4ZGNhOTE4YSIsInBfY2VkdWxhIjoiMTMwNTQxMjMyMSIsInBfYXBlbGxpZG9zIjoiR29uemFsZXMgVmFzcXVleiIsInBfbm9tYnJlcyI6IlRpdHVzIEFsZXhhbmRlciIsIl9fdiI6MCwicF90ZWwiOiIwOTgzNDU2NTg1In0sInVfbWFpbCI6InRpdHVzYWxleEBob3RtYWlsLmNvbSIsInVfYWN0aXZvIjp0cnVlLCJ1X3VzdWFyaW8iOiJUaXR1c2d2Iiwicm9sX2lkIjp7Il9pZCI6IjYxZTdkYzIxYWVkNTkwMjczOTQ5OTYzZCIsInJfcm9sIjoiRW1wbGVhZG8iLCJfX3YiOjB9LCJzdWIiOiI2MWU5MDJkODk5NmNjNTdiOGRjYTkxOGQiLCJpYXQiOjE2NTU5MjMxNTEsImV4cCI6MTY1NjUyNzk1MX0.C_6QV03q8_k3i74dNtUHz6RfK00aw9JJ6Ul0U5RocD0
+GET http://localhost:3000/users/all?input=&op=p&filtro=Nombres
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwZXJzb25hX2lkIjp7Il9pZCI6IjYyYmI1OGU2YjA1MDg4N2ZkMmUyZjcwMCIsInBfY2VkdWxhIjoiMTExMTExMTExIiwicF9hcGVsbGlkb3MiOiJhZG1pbiIsInBfbm9tYnJlcyI6ImFkbWluIiwiX192IjowfSwidV9tYWlsIjoicmVubnlnb3JvemFiZWxAZ21haWwuY29tIiwidV9hY3Rpdm8iOnRydWUsInVfdXN1YXJpbyI6ImFkbWluIiwicm9sX2lkIjp7Il9pZCI6IjYxZTdkNDA5YWVkNTkwMjczOTQ5OTYzYiIsInJfcm9sIjoiQWRtaW5pc3RyYWRvciIsIl9fdiI6MH0sInN1YiI6IjYyYmI1OGU2YjA1MDg4N2ZkMmUyZjcwMyIsImlhdCI6MTY1NjQ0ODg0MywiZXhwIjoxNjU3MDUzNjQzfQ.Osp39epXaAIw9VPVTccrJ0EsL3uGvm2G_1v_bMU-SWE
 
 ### Password (Sin Has confirm)
 POST http://localhost:3000/users/pass
@@ -272,3 +272,25 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwZXJzb25hX2lkIjp7I
 GET http://localhost:3000/noti/all
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MWVlNDAzNjgwOTRkNjgxZWIxZjZmZGMiLCJwZXJzb25hX2lkIjp7Il9pZCI6IjYxZWU0MDM2ODA5NGQ2ODFlYjFmNmZkOSIsInBfY2VkdWxhIjoiMTMwNTQxMjQyMSIsInBfYXBlbGxpZG9zIjoiR29uemFsZXMgVmFycXVleiIsInBfbm9tYnJlcyI6IlJlbm8iLCJfX3YiOjB9LCJ1X21haWwiOiJyZW5vZ29uQGhvdG1haWwuY29tIiwidV9hY3Rpdm8iOnRydWUsInVfdXN1YXJpbyI6IlJHViIsInJvbF9pZCI6eyJfaWQiOiI2MWU3ZGMyN2FlZDU5MDI3Mzk0OTk2M2YiLCJyX3JvbCI6IkNsaWVudGUiLCJfX3YiOjB9LCJzdWIiOiI2MWVlNDAzNjgwOTRkNjgxZWIxZjZmZGMiLCJpYXQiOjE2NTMzNzYyMDIsImV4cCI6MTY1MzU0OTAwMn0.C8OzTNANaQKDb4v8WqkVPhVxz9YDODwKtGe036pi-os
 
+### Crear Admin (Dev)
+POST http://localhost:3000/users/postPlan
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwZXJzb25hX2lkIjp7Il9pZCI6IjYxZTkwMmQ4OTk2Y2M1N2I4ZGNhOTE4YSIsInBfY2VkdWxhIjoiMTMwNTQxMjMyMSIsInBfYXBlbGxpZG9zIjoiR29uemFsZXMgVmFzcXVleiIsInBfbm9tYnJlcyI6IlRpdHVzIEFsZXhhbmRlciIsIl9fdiI6MCwicF90ZWwiOiIwOTgzNDU2NTg1In0sInVfbWFpbCI6InRpdHVzYWxleEBob3RtYWlsLmNvbSIsInVfYWN0aXZvIjp0cnVlLCJ1X3VzdWFyaW8iOiJUaXR1c2d2Iiwicm9sX2lkIjp7Il9pZCI6IjYxZTdkYzIxYWVkNTkwMjczOTQ5OTYzZCIsInJfcm9sIjoiRW1wbGVhZG8iLCJfX3YiOjB9LCJzdWIiOiI2MWU5MDJkODk5NmNjNTdiOGRjYTkxOGQiLCJpYXQiOjE2NTU5MjMxNTEsImV4cCI6MTY1NjUyNzk1MX0.C_6QV03q8_k3i74dNtUHz6RfK00aw9JJ6Ul0U5RocD0
+content-type: application/json
+
+{
+    "persona":
+    {
+        "p_nombres": "admin",
+        "p_apellidos":"admin",
+        "p_cedula":"111111111"
+    },
+    "usuario":
+    {
+        "u_usuario":"admin",
+        "u_mail":"rennygorozabel@gmail.com",
+        "u_activo":true,
+        "u_hash":"",
+        "u_password":"",
+        "rol_id":"61e7dc21aed590273949963d"
+    }
+}

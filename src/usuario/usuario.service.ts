@@ -19,7 +19,7 @@ export class UsuarioService{
     }
 
     async find(param?):Promise<Usuario[]>{
-        return this.usuarioModel.find(param).exec();
+        return this.usuarioModel.find(param).populate({path:'rol_id'}).exec();
     }
 
     async deleteUser(id:string){
@@ -42,7 +42,7 @@ export class UsuarioService{
     }
 
     async findByPersonaID(param?):Promise<Usuario>{
-        return this.usuarioModel.findOne(param).populate({path:'persona_id'}).exec();
+        return this.usuarioModel.findOne(param).populate({path:'persona_id'}).populate({path:'rol_id'}).exec();
     }
 
     async countByMonth(param):Promise<number>{

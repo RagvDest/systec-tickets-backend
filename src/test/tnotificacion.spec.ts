@@ -6,8 +6,11 @@ import { LocalMockAuthGuard } from "src/auth/guards/local-mock-emp-auth.guard";
 import { AppModule } from "src/app.module";
 
 
-describe('App', () => {
+describe('Notificacion', () => {
     let app: INestApplication;
+
+    let initialLength = 2;
+    let totalLength = 4;
 
     beforeAll(async () => {
       const moduleRef = await Test.createTestingModule({
@@ -20,21 +23,19 @@ describe('App', () => {
       await app.init();
     });
 
-    it(`/GET consultar Datos Dashboard`, async () => {
+    it(`/GET consultar notificaciones`, async () => {
         const response = await request(app.getHttpServer())
-          .get('/dashboard')
-          .set('Authorization', 'Bearer '+process.env.TOKEN_TEST)
+          .get('/noti/all')
+          .set('Authorization', 'Bearer '+process.env.TOKEN_TEST_CLI)
         expect(response.status).toBe(200);
-        expect(response.body.totalVentas).toBeTruthy();
-        expect(response.body.txEquipos).toBeTruthy();
-        expect(response.body.txEstados).toBeTruthy();
-        expect(response.body.txClientes).toBeTruthy();
-        expect(response.body.txActivos).toBeTruthy();
-        expect(response.body.nUsers).toBeTruthy();
+        expect(response.body).toHaveLength(initialLength);
       });
 
     afterAll(async () => {
-     
+      const response = await request(app.getHttpServer())
+        .delete('/noti/deleteAll')
+        .set('Authorization', 'Bearer '+process.env.TOKEN_TEST)
+      expect(response.body.deletedCount).toBe(totalLength);
       await app.close();
     });
   });

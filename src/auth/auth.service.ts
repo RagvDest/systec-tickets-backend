@@ -18,7 +18,7 @@ export class AuthService {
 
     async validateUser(username:string,pass:string):Promise<any>{
         try {
-            const user = await this.usuarioService.findOne({u_usuario:{ $regex: '.*' + username + '.*', $options:'i' }});
+            const user = await this.usuarioService.findOne({u_usuario:{ $regex: new RegExp("^"+username+'$' , 'i' )}});
             const match = user && await bcrypt.compare(pass,user.u_password);
             if(user && user.u_activo && match){
                 const result = {

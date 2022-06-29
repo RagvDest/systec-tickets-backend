@@ -6,7 +6,7 @@ import { LocalMockAuthGuard } from "src/auth/guards/local-mock-emp-auth.guard";
 import { AppModule } from "src/app.module";
 
 
-describe.skip('Usuarios', () => {
+describe('Usuarios', () => {
     let app: INestApplication;
 
     let initialLength = 7;
@@ -91,7 +91,7 @@ describe.skip('Usuarios', () => {
         .set('Content-Type','application/json')
         .send(json)
       expect(response.status).toBe(400)
-      expect(response.text).toBe('Error al crear usuario con esos datos');
+      expect(response.text).toBe('Error al crear usuario con los datos proporcionados');
     });
 
     it(`/POST ERROR Crear usuario CLIENTE unique value`, async () => {
@@ -102,7 +102,7 @@ describe.skip('Usuarios', () => {
         .set('Content-Type','application/json')
         .send(json)
       expect(response.status).toBe(400)
-      expect(response.text).toBe('Error al crear usuario con esos datos');
+      expect(response.text).toBe('Error al crear usuario con los datos proporcionados');
     });
 
     it(`/PATCH Actualizar usuario CLIENTE`, async () => {
