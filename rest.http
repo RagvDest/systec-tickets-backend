@@ -273,21 +273,21 @@ GET http://localhost:3000/noti/all
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MWVlNDAzNjgwOTRkNjgxZWIxZjZmZGMiLCJwZXJzb25hX2lkIjp7Il9pZCI6IjYxZWU0MDM2ODA5NGQ2ODFlYjFmNmZkOSIsInBfY2VkdWxhIjoiMTMwNTQxMjQyMSIsInBfYXBlbGxpZG9zIjoiR29uemFsZXMgVmFycXVleiIsInBfbm9tYnJlcyI6IlJlbm8iLCJfX3YiOjB9LCJ1X21haWwiOiJyZW5vZ29uQGhvdG1haWwuY29tIiwidV9hY3Rpdm8iOnRydWUsInVfdXN1YXJpbyI6IlJHViIsInJvbF9pZCI6eyJfaWQiOiI2MWU3ZGMyN2FlZDU5MDI3Mzk0OTk2M2YiLCJyX3JvbCI6IkNsaWVudGUiLCJfX3YiOjB9LCJzdWIiOiI2MWVlNDAzNjgwOTRkNjgxZWIxZjZmZGMiLCJpYXQiOjE2NTMzNzYyMDIsImV4cCI6MTY1MzU0OTAwMn0.C8OzTNANaQKDb4v8WqkVPhVxz9YDODwKtGe036pi-os
 
 ### Crear Admin (Dev)
-POST http://localhost:3000/users/postPlan
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwZXJzb25hX2lkIjp7Il9pZCI6IjYxZTkwMmQ4OTk2Y2M1N2I4ZGNhOTE4YSIsInBfY2VkdWxhIjoiMTMwNTQxMjMyMSIsInBfYXBlbGxpZG9zIjoiR29uemFsZXMgVmFzcXVleiIsInBfbm9tYnJlcyI6IlRpdHVzIEFsZXhhbmRlciIsIl9fdiI6MCwicF90ZWwiOiIwOTgzNDU2NTg1In0sInVfbWFpbCI6InRpdHVzYWxleEBob3RtYWlsLmNvbSIsInVfYWN0aXZvIjp0cnVlLCJ1X3VzdWFyaW8iOiJUaXR1c2d2Iiwicm9sX2lkIjp7Il9pZCI6IjYxZTdkYzIxYWVkNTkwMjczOTQ5OTYzZCIsInJfcm9sIjoiRW1wbGVhZG8iLCJfX3YiOjB9LCJzdWIiOiI2MWU5MDJkODk5NmNjNTdiOGRjYTkxOGQiLCJpYXQiOjE2NTU5MjMxNTEsImV4cCI6MTY1NjUyNzk1MX0.C_6QV03q8_k3i74dNtUHz6RfK00aw9JJ6Ul0U5RocD0
+POST https://systec-backend.herokuapp.com/users/postPlan
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwZXJzb25hX2lkIjp7Il9pZCI6IjYyODQ4MzQyOGU1ZjMwNmMyNGM1ZjM1YSIsInBfY2VkdWxhIjoiMTI0NTEzMjEwMSIsInBfYXBlbGxpZG9zIjoiYWRtaW4iLCJwX25vbWJyZXMiOiJhZG1pbiIsIl9fdiI6MH0sInVfbWFpbCI6InJlbm55Z29yb3phYmVsQGdtYWlsLmNvbSIsInVfYWN0aXZvIjp0cnVlLCJ1X3VzdWFyaW8iOiJhZG1pbiIsInJvbF9pZCI6eyJfaWQiOiI2MWU3ZGMyMWFlZDU5MDI3Mzk0OTk2M2QiLCJyX3JvbCI6IkVtcGxlYWRvIiwiX192IjowfSwic3ViIjoiNjI4NDgzNDI4ZTVmMzA2YzI0YzVmMzVkIiwiaWF0IjoxNjU2NDk3ODE3LCJleHAiOjE2NTcxMDI2MTd9.PRd6pweRjeoge01hi9cIjI0uTY84NN6WFlPHjAYw_FM
 content-type: application/json
 
 {
     "persona":
     {
-        "p_nombres": "admin",
-        "p_apellidos":"admin",
+        "p_nombres": "adm",
+        "p_apellidos":"adm",
         "p_cedula":"111111111"
     },
     "usuario":
     {
-        "u_usuario":"admin",
-        "u_mail":"rennygorozabel@gmail.com",
+        "u_usuario":"adm",
+        "u_mail":"ragvdr4develop@gmail.com",
         "u_activo":true,
         "u_hash":"",
         "u_password":"",

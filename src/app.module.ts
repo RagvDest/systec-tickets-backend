@@ -24,6 +24,9 @@ import { AuthService } from './auth/auth.service';
 import { JwtService } from '@nestjs/jwt';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
+import { ScheduleModule } from '@nestjs/schedule';
+import { TasksService } from './task.service';
+import { Notificacion, NotificacionSchema } from './notificacion/notificacion.entity';
 
 let {MONGO_URI, MONGO_URI_TEST, NODE_ENV} = process.env;
 
@@ -50,9 +53,11 @@ let mongo_uri = NODE_ENV === 'test' ? MONGO_URI_TEST : MONGO_URI;
           {name:Persona.name, schema:PersonaSchema},
           {name:Pedido.name,schema:PedidoSchema},
           {name:Ticket.name,schema:TicketSchema},
-          {name:Persona.name,schema:PersonaSchema}
+          {name:Persona.name,schema:PersonaSchema},
+          {name:Notificacion.name,schema:NotificacionSchema}
       ]),
-    AuthModule
+    AuthModule,
+    ScheduleModule.forRoot()
   ],
   controllers: [AppController],
   providers: [
@@ -64,6 +69,7 @@ let mongo_uri = NODE_ENV === 'test' ? MONGO_URI_TEST : MONGO_URI;
     PersonaService,
     JwtService, 
     AuthService,
+    TasksService,
     {
       provide: APP_GUARD,
       useExisting: JwtAuthGuard,
