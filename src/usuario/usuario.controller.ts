@@ -67,7 +67,7 @@ export class UsuarioController{
             hasheado,user['_id'],
             user.u_mail,id_persona.p_nombres);
 
-        res.status(200).send({});
+        res.status(200).send({mensaje:'Si el correo indicado corresponde a una cuenta, se le enviará un enalce para recuperar su contraseña'});
 
       } catch (error) {
           this.logger.error("Recover Pass: "+error);
