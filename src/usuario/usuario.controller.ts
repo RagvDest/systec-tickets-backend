@@ -367,11 +367,13 @@ export class UsuarioController{
                 res.send({ok:true,usuario:usuarioCreado,persona:id_persona,rol:rol_id})
             }
         } catch (error) {
+            let errMensaje = 'Error al crear usuario con los datos proporcionados';
             this.logger.error("Error Crear Usuario: "+error);
             let code = 500;
             switch (error.code){
                 case 11000:{
                     code=400
+                    errMensaje = 'Usuario o Mail YA estan registrados';
                     break;
                 }
             }
@@ -384,7 +386,7 @@ export class UsuarioController{
             }else{
                 code = 400
             }
-            res.status(code).send('Error al crear usuario con los datos proporcionados');
+            res.status(code).send(errMensaje);
         }
     }
 

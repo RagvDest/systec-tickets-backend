@@ -102,7 +102,7 @@ describe('Usuarios', () => {
         .set('Content-Type','application/json')
         .send(json)
       expect(response.status).toBe(400)
-      expect(response.text).toBe('Error al crear usuario con los datos proporcionados');
+      expect(response.text).toBe('Usuario o Mail YA estan registrados');
     });
 
     it(`/PATCH Actualizar usuario CLIENTE`, async () => {
