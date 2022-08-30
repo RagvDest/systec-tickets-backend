@@ -434,6 +434,7 @@ export class UsuarioController{
             return;
         } 
         try {
+            console.log('aca estamos');
             const usuarioEncontrado = await this._usuarioServices.findByID(idUsuario);
             if(usuarioEncontrado==null){
                 res.status(400).send({error:'No existe usuario'});
@@ -543,46 +544,50 @@ export class UsuarioController{
         rol,
         param?
     ){
-        const results =[];
-        let usuarios, personas, usuario, persona;
+        try {
+            const results =[];
+            let usuarios, personas, usuario, persona;
 
-        let completo={
-            username:{},
-            persona:{}
-        };
-        if(op==='u'){
-            usuarios = await this._usuarioServices.find(param);
-            for(var i=0;i<usuarios.length;i++){
-                completo={
-                    username:{},
-                    persona:{}
-                };
-                persona = await this._personaServices.findByID(usuarios[i].persona_id);
-                usuarios[i].u_usuario=capitalize.words(usuarios[i].u_usuario);
-                persona.p_apellidos = capitalize.words(persona.p_apellidos);
-                persona.p_nombres = capitalize.words(persona.p_nombres);
-                completo.username = usuarios[i];
-                completo.persona = persona;
-                results.push(completo);
-            }
-        }else if(op==='p' || param==null){
-            personas = await this._personaServices.findAll(param);
-            for(var i=0;i<personas.length;i++){
-                completo={
-                    username:{},
-                    persona:{}
-                };
-                let paramPersona = {persona_id:personas[i]._id};
-                usuario = await this._usuarioServices.findByPersonaID(paramPersona);
-                usuario.u_usuario=capitalize.words(usuario.u_usuario);
-                personas[i].p_apellidos = capitalize.words(personas[i].p_apellidos);
-                personas[i].p_nombres = capitalize.words(personas[i].p_nombres);
-                completo.username = usuario;
-                completo.persona = personas[i];
-                results.push(completo);
-            }
+            let completo={
+                username:{},
+                persona:{}
+            };
+            if(op==='u'){
+                usuarios = await this._usuarioServices.find(param);
+                for(var i=0;i<usuarios.length;i++){
+                    completo={
+                        username:{},
+                        persona:{}
+                    };
+                    persona = await this._personaServices.findByID(usuarios[i].persona_id);
+                    usuarios[i].u_usuario=capitalize.words(usuarios[i].u_usuario);
+                    persona.p_apellidos = capitalize.words(persona.p_apellidos);
+                    persona.p_nombres = capitalize.words(persona.p_nombres);
+                    completo.username = usuarios[i];
+                    completo.persona = persona;
+                    results.push(completo);
+                }
+            }else if(op==='p' || param==null){
+                personas = await this._personaServices.findAll(param);
+                for(var i=0;i<personas.length;i++){
+                    completo={
+                        username:{},
+                        persona:{}
+                    };
+                    let paramPersona = {persona_id:personas[i]._id};
+                    usuario = await this._usuarioServices.findByPersonaID(paramPersona);
+                    usuario.u_usuario=capitalize.words(usuario.u_usuario);
+                    personas[i].p_apellidos = capitalize.words(personas[i].p_apellidos);
+                    personas[i].p_nombres = capitalize.words(personas[i].p_nombres);
+                    completo.username = usuario;
+                    completo.persona = personas[i];
+                    results.push(completo);
+                }
+           }
+            return results;
+        } catch (error) {
+            return new Error(error);
         }
-        return results;
     }
 
 }

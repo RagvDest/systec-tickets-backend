@@ -26,7 +26,7 @@ describe('Usuarios', () => {
         u_usuario:'Test',
         rol_id:'61e7dc27aed590273949963f'
       },
-      rol:'61e7dc27aed590273949963f'
+      rol:'EMPLEADO'
     };
   
     beforeAll(async () => {
@@ -45,6 +45,7 @@ describe('Usuarios', () => {
       const response = await request(app.getHttpServer())
         .get('/users/all')
         .set('Authorization', 'Bearer '+process.env.TOKEN_TEST)
+      expect(response.status).toBe(200);
       expect(response.body.results).toHaveLength(initialLength);
     });
 
@@ -70,7 +71,6 @@ describe('Usuarios', () => {
     });
 
     it(`/POST Crear usuario CLIENTE`, async () => {
-
       const response = await request(app.getHttpServer())
         .post('/users/crear')
         .set('Authorization', 'Bearer '+process.env.TOKEN_TEST)
@@ -84,6 +84,7 @@ describe('Usuarios', () => {
 
     it(`/POST ERROR Crear usuario CLIENTE sin Nombres`, async () => {
       let json = body;
+      let p_nombres = body.persona.p_nombres;
       delete json.persona.p_nombres;
       const response = await request(app.getHttpServer())
         .post('/users/crear')
@@ -92,6 +93,7 @@ describe('Usuarios', () => {
         .send(json)
       expect(response.status).toBe(400)
       expect(response.text).toBe('Error al crear usuario con los datos proporcionados');
+      body.persona.p_nombres = p_nombres;
     });
 
     it(`/POST ERROR Crear usuario CLIENTE unique value`, async () => {

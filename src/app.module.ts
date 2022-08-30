@@ -32,7 +32,6 @@ let {MONGO_URI, MONGO_URI_TEST, NODE_ENV} = process.env;
 
 let mongo_uri = NODE_ENV === 'test' ? MONGO_URI_TEST : MONGO_URI;
 
-
 @Module({
   imports: [
     ConfigModule.forRoot({

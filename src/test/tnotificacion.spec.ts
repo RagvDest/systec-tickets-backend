@@ -31,11 +31,14 @@ describe('Notificacion', () => {
         expect(response.body).toHaveLength(initialLength);
       });
 
+      it(`/DELETE Eliminar notificaciones de Test`, async () =>{
+        const response = await request(app.getHttpServer())
+          .delete('/noti/deleteAll')
+          .set('Authorization', 'Bearer '+process.env.TOKEN_TEST)
+        expect(response.body.deletedCount).toBe(totalLength);
+      })
+
     afterAll(async () => {
-      const response = await request(app.getHttpServer())
-        .delete('/noti/deleteAll')
-        .set('Authorization', 'Bearer '+process.env.TOKEN_TEST)
-      expect(response.body.deletedCount).toBe(totalLength);
       await app.close();
     });
   });

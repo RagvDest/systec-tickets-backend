@@ -230,6 +230,7 @@ export class PedidoController {
         let ped = pedidos[u];
         pedido.ped_fc_fin = ped.ped_fc_fin;
         pedido.ped_nro_orden = ped.ped_nro_orden;
+        ped.usuario_id.persona_id.p_nombres = capitalize(ped.usuario_id.persona_id.p_nombres);
         pedido.usuario_id = ped.usuario_id;
         pedido._id = ped['_id'];
         let countTickets = await this._ticketServices.countTickets({pedido_id:pedido['_id']})

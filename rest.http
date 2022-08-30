@@ -23,8 +23,8 @@ POST http://localhost:3000/users/logIn
 content-type: application/json
 
 {
-    "password": "1234",
-    "username": "Titusgv"
+    "password": "123456",
+    "username": "admin"
 }
 
 ### Example JWT
@@ -137,8 +137,8 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwZXJzb25hX2lkIjp7I
 
 ###  LISTAR
 
-GET http://localhost:3000/users/all?input=&op=p&filtro=Nombres
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwZXJzb25hX2lkIjp7Il9pZCI6IjYyYmI1OGU2YjA1MDg4N2ZkMmUyZjcwMCIsInBfY2VkdWxhIjoiMTExMTExMTExIiwicF9hcGVsbGlkb3MiOiJhZG1pbiIsInBfbm9tYnJlcyI6ImFkbWluIiwiX192IjowfSwidV9tYWlsIjoicmVubnlnb3JvemFiZWxAZ21haWwuY29tIiwidV9hY3Rpdm8iOnRydWUsInVfdXN1YXJpbyI6ImFkbWluIiwicm9sX2lkIjp7Il9pZCI6IjYxZTdkNDA5YWVkNTkwMjczOTQ5OTYzYiIsInJfcm9sIjoiQWRtaW5pc3RyYWRvciIsIl9fdiI6MH0sInN1YiI6IjYyYmI1OGU2YjA1MDg4N2ZkMmUyZjcwMyIsImlhdCI6MTY1NjQ0ODg0MywiZXhwIjoxNjU3MDUzNjQzfQ.Osp39epXaAIw9VPVTccrJ0EsL3uGvm2G_1v_bMU-SWE
+GET http://localhost:3000/users/all
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwZXJzb25hX2lkIjp7Il9pZCI6IjYyYmMxODFiYjJlMDJmYzJkYTkzY2NkZiIsInBfY2VkdWxhIjoiMTExMTExMTExIiwicF9hcGVsbGlkb3MiOiJhZG1pbiIsInBfbm9tYnJlcyI6ImFkbWluIiwiX192IjowfSwidV9tYWlsIjoicmVubnlnb3JvemFiZWxAZ21haWwuY29tIiwidV9hY3Rpdm8iOnRydWUsInVfdXN1YXJpbyI6ImFkbWluIiwicm9sX2lkIjp7Il9pZCI6IjYxZTdkNDA5YWVkNTkwMjczOTQ5OTYzYiIsInJfcm9sIjoiQWRtaW5pc3RyYWRvciIsIl9fdiI6MH0sInN1YiI6IjYyYmMxODFiYjJlMDJmYzJkYTkzY2NlMiIsImlhdCI6MTY1NzMzMjQ4MCwiZXhwIjoxNjU3OTM3MjgwfQ.u8D59IsdZ_UehPHcrf5kc1J7auC5Ber54qBjizAYAYY
 
 ### Password (Sin Has confirm)
 POST http://localhost:3000/users/pass
@@ -150,8 +150,8 @@ content-type: application/json
 }
 
 ### --- PEDIDOS LISTAR
-
-POST http://localhost:3000/pedido/all?input='Tito'
+POST http://localhost:3000/pedido/all
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwZXJzb25hX2lkIjp7Il9pZCI6IjYyYmMxODFiYjJlMDJmYzJkYTkzY2NkZiIsInBfY2VkdWxhIjoiMTExMTExMTExIiwicF9hcGVsbGlkb3MiOiJhZG1pbiIsInBfbm9tYnJlcyI6ImFkbWluIiwiX192IjowfSwidV9tYWlsIjoicmVubnlnb3JvemFiZWxAZ21haWwuY29tIiwidV9hY3Rpdm8iOnRydWUsInVfdXN1YXJpbyI6ImFkbWluIiwicm9sX2lkIjp7Il9pZCI6IjYxZTdkNDA5YWVkNTkwMjczOTQ5OTYzYiIsInJfcm9sIjoiQWRtaW5pc3RyYWRvciIsIl9fdiI6MH0sInN1YiI6IjYyYmMxODFiYjJlMDJmYzJkYTkzY2NlMiIsImlhdCI6MTY1NzMzMjQ4MCwiZXhwIjoxNjU3OTM3MjgwfQ.u8D59IsdZ_UehPHcrf5kc1J7auC5Ber54qBjizAYAYY
 content-type: application/json
 
 
