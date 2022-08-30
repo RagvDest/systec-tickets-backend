@@ -6,6 +6,8 @@ import { Usuario } from 'src/usuario/usuario.entity';
 import { UsuarioService } from 'src/usuario/usuario.service';
 
 const bcrypt = require('bcryptjs');
+var capitalize = require('capitalize')
+
 
 @Injectable()
 export class AuthService {
@@ -21,13 +23,15 @@ export class AuthService {
             const user = await this.usuarioService.findOne({u_usuario:{ $regex: new RegExp("^"+username+'$' , 'i' )}});
             const match = user && await bcrypt.compare(pass,user.u_password);
             if(user && user.u_activo && match){
+                user.persona_id.p_apellidos = capitalize(user.persona_id.p_apellidos);
+                user.persona_id.p_nombres = capitalize(user.persona_id.p_nombres);
                 const result = {
                     id:user["_id"],
                     user:{
                         persona_id:user.persona_id,
                         u_mail:user.u_mail,
                         u_activo:user.u_activo,
-                        u_usuario:user.u_usuario,
+                        u_usuario:capitalize(user.u_usuario),
                         rol_id:user.rol_id
                     },
                     rol_id:user.rol_id
@@ -60,6 +64,9 @@ export class AuthService {
                 else{
                     if(pedidos[0].ped_estado==="CERRADO") status = "PEDIDO CERRADO: "+this.usuarioService.fcConvert(pedidos[0].ped_fc_fin)
                     else{
+                        user.persona_id.p_apellidos = capitalize(user.persona_id.p_apellidos);
+                        user.persona_id.p_nombres = capitalize(user.persona_id.p_nombres);
+
                         let userAux = {
                             _id:user["_id"],
                             persona_id:user.persona_id,

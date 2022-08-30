@@ -13,6 +13,9 @@ export class Pedido{
     ped_fc_fin:Date;
 
     @Prop()
+    ped_fc_noti:Date;
+
+    @Prop()
     ped_estado:string;
 
     @Prop()
