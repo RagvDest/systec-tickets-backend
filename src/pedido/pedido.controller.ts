@@ -194,7 +194,14 @@ export class PedidoController {
       if(req.user.data.rol_id.r_rol==='Cliente'){
         res.status(401).send();
         return;
-    } 
+    }
+    let tickets = await this._ticketServices.findByPedidoID({pedido_id:idPedido});
+    tickets.forEach( async(it) =>{
+      let estadosDel = await this._estadoServices.deleteByTicket(it['_id']);
+      this.logger.debug(estadosDel);
+    });
+    let ticketsDel = await this._ticketServices.deleteByPedidoID(idPedido);
+    this.logger.debug(ticketsDel);
     let pedidoEliminado = await this.pedidoService.deleteById(idPedido);
     res.status(200).send(pedidoEliminado);
     } catch (error) {
@@ -230,7 +237,7 @@ export class PedidoController {
         let ped = pedidos[u];
         pedido.ped_fc_fin = ped.ped_fc_fin;
         pedido.ped_nro_orden = ped.ped_nro_orden;
-        ped.usuario_id.persona_id.p_nombres = capitalize(ped.usuario_id.persona_id.p_nombres);
+        ped.usuario_id.persona_id.p_nombres = capitalize.words(ped.usuario_id.persona_id.p_nombres);
         pedido.usuario_id = ped.usuario_id;
         pedido._id = ped['_id'];
         let countTickets = await this._ticketServices.countTickets({pedido_id:pedido['_id']})
@@ -344,10 +351,10 @@ export class PedidoController {
   }
 
   sortDesc(a,b){
-    return new Date(a.pedido.ped_fc_fin).getTime()-new Date(b.pedido.ped_fc_fin).getTime();
+    return new Date(a.pedido.ped_fc_registro).getTime()-new Date(b.pedido.ped_fc_registro).getTime();
   }
   sortAsc(a,b){
-    return new Date(b.pedido.ped_fc_fin).getTime()-new Date(a.pedido.ped_fc_fin).getTime();
+    return new Date(b.pedido.ped_fc_registro).getTime()-new Date(a.pedido.ped_fc_registro).getTime();
   }
 
 }

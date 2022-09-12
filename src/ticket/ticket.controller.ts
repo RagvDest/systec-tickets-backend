@@ -9,6 +9,8 @@ import { PersonaService } from 'src/persona/persona.service';
 import { TicketCreateDto } from './dto/ticket.create.dto';
 import { RolService } from 'src/rol/rol.service';
 import { NotificacionService } from 'src/notificacion/notificacion.service';
+var capitalize = require('capitalize')
+
 
 @Controller('ticket')
 export class TicketController {
@@ -148,13 +150,17 @@ export class TicketController {
       @Param('idPedido') idPedido
   ) {
     try {
-      const tickets = await this.ticketService.find({pedido_id:idPedido});
       const pedido = await this.pedidoService.findByID(idPedido);
+      if(pedido==null){
+        res.send([])
+        return;
+      }
+      const tickets = await this.ticketService.find({pedido_id:idPedido});
       const usuario = await this.usuarioService.findByID(pedido.usuario_id);
       const persona = await this.personaService.findByID(usuario.persona_id);
       const completo ={
         tickets:tickets.reverse(),
-        p_nombres:persona.p_nombres+" "+persona.p_apellidos
+        p_nombres:capitalize.words(persona.p_nombres+" "+persona.p_apellidos)
       }
       res.send({results:completo});
     } catch (error) {

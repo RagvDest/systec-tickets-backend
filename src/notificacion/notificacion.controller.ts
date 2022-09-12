@@ -26,8 +26,13 @@ export class NotificacionController {
                 results = await this.notiService.find();
             }
             else{
-                param = {usuario_id:req.user.userId};
+
+                param = {
+                    usuario_id:req.user.userId,
+                    pedido_id:req.user.data.idPedido
+                };
                 results = await this.notiService.find(param)
+                
                 actu = await this.notiService.updateAll(param,{"$set":{"n_new":false}});
             }
             console.log(actu);

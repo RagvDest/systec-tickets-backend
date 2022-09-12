@@ -12,6 +12,9 @@ import { EstadoUpdateDto } from "./dto/estado.update.dto";
 import { Estado } from "./estado.entity";
 import { EstadoService } from "./estado.service";
 
+var capitalize = require('capitalize')
+
+
 @Controller('estado')
 export class EstadoController {
   constructor(
@@ -150,6 +153,9 @@ export class EstadoController {
     ){
         try {
             const estadosEncontrado = await this.estadoService.findByTicketID({ticket_id:ticket_id});
+            estadosEncontrado.map((it)=>{
+                it.e_usuario = capitalize.words(it.e_usuario);
+            })
             res.send({estado:estadosEncontrado,ticket:null});
         } catch (error) {
             console.error(error);

@@ -25,6 +25,10 @@ export class EstadoService{
         return this.estadoModel.findByIdAndDelete(id).exec();
     }
 
+    async deleteByTicket(id:string){
+        return this.estadoModel.deleteMany({ticket_id:id}).exec();
+    }
+
     async updateByID(estado_id?,query?):Promise<Estado>{
         return this.estadoModel.findByIdAndUpdate(estado_id,query,{upsert:false});
     }

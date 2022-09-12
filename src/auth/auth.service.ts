@@ -23,8 +23,8 @@ export class AuthService {
             const user = await this.usuarioService.findOne({u_usuario:{ $regex: new RegExp("^"+username+'$' , 'i' )}});
             const match = user && await bcrypt.compare(pass,user.u_password);
             if(user && user.u_activo && match){
-                user.persona_id.p_apellidos = capitalize(user.persona_id.p_apellidos);
-                user.persona_id.p_nombres = capitalize(user.persona_id.p_nombres);
+                user.persona_id.p_apellidos = capitalize.words(user.persona_id.p_apellidos);
+                user.persona_id.p_nombres = capitalize.words(user.persona_id.p_nombres);
                 const result = {
                     id:user["_id"],
                     user:{
@@ -75,7 +75,7 @@ export class AuthService {
                             u_usuario:user.u_usuario,
                             rol_id:user.rol_id
                         };
-                        return {user:{user:userAux,rol_id:user.rol_id,codPedido:orden,pedidos:pedidos},status:status};
+                        return {user:{user:userAux,rol_id:user.rol_id,idPedido:pedidos[0]['_id'],codPedido:orden,pedidos:pedidos},status:status};
                     }
                 }
             }
@@ -85,6 +85,7 @@ export class AuthService {
 
     async login(user:any,op?){
         const payload = user.user;
+        payload.idPedido = user.idPedido;
         payload.sub = op==='emp' ? user.id : user.user._id;
         const options:JwtSignOptions = {
             secret:process.env.JWT_SECRET,

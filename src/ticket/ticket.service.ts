@@ -1,11 +1,13 @@
 import { Model } from 'mongoose';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Ticket } from './ticket.entity';
 
 @Injectable()
 export class TicketService{
     constructor(@InjectModel(Ticket.name) private ticketModel:Model<Ticket>){}
+
+    private logger:Logger = new Logger('TicketService');
 
     async find(param?):Promise<Ticket[]>{
         return this.ticketModel.find(param).exec();
@@ -38,5 +40,11 @@ export class TicketService{
     }
     async deleteByID(id):Promise<Ticket>{
         return this.ticketModel.findByIdAndDelete(id).exec();
+    }
+    async deleteByPedidoID(id):Promise<Ticket[]>{
+        let tickets = await this.findByPedidoID({pedido_id:id});
+        let result = await this.ticketModel.deleteMany({pedido_id:id});
+        this.logger.debug(result);
+        return tickets;
     }
 }

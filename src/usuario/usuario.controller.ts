@@ -350,7 +350,6 @@ export class UsuarioController{
                 res.status(400).send('Error validación de campos');
                 return;
             }else{
-                usuario.u_activo = false;
                 usuarioCreado = await this._usuarioServices.create(usuario);
                 if(rol_id.r_rol==='Empleado'){
                     var dateHash = new Date();
@@ -359,6 +358,7 @@ export class UsuarioController{
                     var hasheado = await bcrypt.hash(dateFormated, saltRounds);
                     hasheado = hasheado.replace("/","");
                     usuarioCreado.u_hash = hasheado;
+                    usuarioCreado.u_activo = false;
                     usuarioCreado = await this._usuarioServices.updateByID(usuarioCreado['_id'],usuarioCreado);
                     await this.generarPassword(
                         hasheado,usuarioCreado['_id'],
@@ -411,6 +411,11 @@ export class UsuarioController{
                 throw new BadRequestException('No existe usuario');
             }
             const personaEncontrada = await this._personaServices.findByID(usuarioEncontrado.persona_id);
+            personaEncontrada.p_nombres = capitalize.words(personaEncontrada.p_nombres);
+            personaEncontrada.p_apellidos = capitalize.words(personaEncontrada.p_apellidos);
+
+            usuarioEncontrado.u_usuario = usuarioEncontrado.u_usuario.toUpperCase();
+
             const rolEncontrado = await this._rolServices.findByID(usuarioEncontrado.rol_id);
             res.send({usuario:usuarioEncontrado, persona:personaEncontrada, rol:rolEncontrado});
         } catch (error) {
@@ -434,7 +439,6 @@ export class UsuarioController{
             return;
         } 
         try {
-            console.log('aca estamos');
             const usuarioEncontrado = await this._usuarioServices.findByID(idUsuario);
             if(usuarioEncontrado==null){
                 res.status(400).send({error:'No existe usuario'});
@@ -467,7 +471,12 @@ export class UsuarioController{
 
                 const personaActualizada = await this._personaServices.updateByID(idPersona,persona);
                 const usuarioActualizado = await this._usuarioServices.updateByID(usuarioEncontrado['_id'],usuario);
-                res.send({usuario:Object.assign(usuarioActualizado,usuario),persona:Object.assign(personaActualizada,persona)});
+                let userAux = Object.assign(usuarioActualizado,usuario);
+                let personaAux = Object.assign(personaActualizada,persona);
+                userAux.u_usuario = capitalize.words(usuarioActualizado.u_usuario);
+                personaAux.p_nombres = capitalize.words(personaActualizada.p_nombres);
+                personaAux.p_apellidos = capitalize.words(personaActualizada.p_apellidos);
+                res.send({usuario:userAux,persona:personaAux});
             }
         } catch (error) {
             this.logger.error(`Update Person: ${error}`);
@@ -560,7 +569,7 @@ export class UsuarioController{
                         persona:{}
                     };
                     persona = await this._personaServices.findByID(usuarios[i].persona_id);
-                    usuarios[i].u_usuario=capitalize.words(usuarios[i].u_usuario);
+                    usuarios[i].u_usuario=usuarios[i].u_usuario.toUpperCase();
                     persona.p_apellidos = capitalize.words(persona.p_apellidos);
                     persona.p_nombres = capitalize.words(persona.p_nombres);
                     completo.username = usuarios[i];
@@ -576,7 +585,7 @@ export class UsuarioController{
                     };
                     let paramPersona = {persona_id:personas[i]._id};
                     usuario = await this._usuarioServices.findByPersonaID(paramPersona);
-                    usuario.u_usuario=capitalize.words(usuario.u_usuario);
+                    usuario.u_usuario=usuario.u_usuario.toUpperCase();
                     personas[i].p_apellidos = capitalize.words(personas[i].p_apellidos);
                     personas[i].p_nombres = capitalize.words(personas[i].p_nombres);
                     completo.username = usuario;
