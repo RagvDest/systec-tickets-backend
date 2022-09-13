@@ -5,6 +5,9 @@ import { PersonaService } from './persona/persona.service';
 import { TicketService } from './ticket/ticket.service';
 import { UsuarioService } from './usuario/usuario.service';
 
+var capitalize = require('capitalize')
+
+
 @Controller()
 export class AppController {
   constructor(
@@ -69,7 +72,7 @@ export class AppController {
         return {
           id:it['_id'],
           usuario:{
-            nombres:`${persona.p_nombres}`,
+            nombres:`${capitalize.words(persona.p_nombres)}`,
             id:it.usuario_id['_id']
           }
       }
@@ -104,7 +107,8 @@ export class AppController {
 
       // Ventas por Mes
       let totalVentasArray = ticketsMes.map((it)=>{
-          return it.t_abono;
+        let resultado = it.t_total - it.t_abono;
+        return resultado;
       });
       const reducer = (a,b) =>{
         return a+b;
