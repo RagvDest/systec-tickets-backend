@@ -60,12 +60,14 @@ export class UsuarioController{
         var dateFormated = this._usuarioServices.fcConvert(dateHash);
         console.log(dateFormated);
         var hasheado = await bcrypt.hash(dateFormated, saltRounds);
-        hasheado = hasheado.replace("/","");
+        console.log(hasheado);
+        hasheado = hasheado.split("/").join("");
+        console.log(hasheado);
         user.u_hash = hasheado;
         user = await this._usuarioServices.updateByID(user['_id'],user);
         await this.generarPassword(
             hasheado,user['_id'],
-            user.u_mail,id_persona.p_nombres);
+            user.u_mail,capitalize.words(id_persona.p_nombres));
 
         res.status(200).send({mensaje:'Si el correo indicado corresponde a una cuenta, se le enviará un enalce para recuperar su contraseña'});
 
@@ -91,12 +93,13 @@ export class UsuarioController{
                 res.status(400).send({error:'No existe usuario'});
                 throw new Error("No existe usuario");
             }
-            if(usuario.u_hash==='hash'){
-                res.status(400).send({error:'Operación no autorizada'});
-                throw new Error("Operación no autorizada");
+            if(usuario.u_hash!=hash){
+                res.status(400).send('Operación no autorizada');
+                this.logger.error('Operación no autorizada - HASH');
+                return ;
             }
-            let hash = await bcrypt.hash(pass, saltRounds);
-            usuario.u_password = hash;
+            let hash2 = await bcrypt.hash(pass, saltRounds);
+            usuario.u_password = hash2;
             usuario.u_hash="";
             usuario.u_activo = true;
             const usuarioActualizado = await this._usuarioServices.updateByID(idUsuario,usuario);
@@ -185,9 +188,10 @@ export class UsuarioController{
     async buscarUsuarios(
         @Res() res,
         @Req() req,
+        @Query('mode') mode,
         @Query('filtro') filtro?,
         @Query('input') input?,
-        @Query('op') op?,
+        @Query('op') op?
     ){
         input = input != null ? input.toLowerCase():'';
         if(req.user.data.rol_id.r_rol==='Cliente'){
@@ -196,14 +200,28 @@ export class UsuarioController{
         } 
         
         let param;
-        if(filtro=='Username')
-            param = {u_usuario: { $regex: '.*' + input + '.*', $options:'i' }}
-        else if (filtro=='Correo')
-            param = {u_mail: { $regex: '.*' + input + '.*', $options:'i' }}
-        else if(filtro == 'Nombres')
-            param = {p_nombres:{ $regex: '.*' + input + '.*', $options:'i' }}
-        else if(filtro == 'Cédula')
-            param = {p_cedula:{ $regex: '.*' + input + '.*', $options:'i' }}
+        if(mode === 'q'){
+            op = 'u';
+            param = {u_activo:true};
+            if(filtro=='Username')
+                param = {u_usuario: { $regex: '.*' + input + '.*', $options:'i' }, u_activo:true}
+            else if (filtro=='Correo')
+                param = {u_mail: { $regex: '.*' + input + '.*', $options:'i' }, u_activo:true}
+            else if(filtro == 'Nombres')
+                param = {p_nombres:{ $regex: '.*' + input + '.*', $options:'i' }, u_activo:true}
+            else if(filtro == 'Cédula')
+                param = {p_cedula:{ $regex: '.*' + input + '.*', $options:'i' }, u_activo:true}
+        }else{
+            if(filtro=='Username')
+                param = {u_usuario: { $regex: '.*' + input + '.*', $options:'i' }}
+            else if (filtro=='Correo')
+                param = {u_mail: { $regex: '.*' + input + '.*', $options:'i' }}
+            else if(filtro == 'Nombres')
+                param = {p_nombres:{ $regex: '.*' + input + '.*', $options:'i' }}
+            else if(filtro == 'Cédula')
+                param = {p_cedula:{ $regex: '.*' + input + '.*', $options:'i' }}
+        }
+
         try {
             let rol = req.user.data.rol_id.r_rol === 'Empleado' ? 'emp' : 'all';
             const results = await this.llenarDatos(op,rol,param);    
@@ -350,19 +368,20 @@ export class UsuarioController{
                 res.status(400).send('Error validación de campos');
                 return;
             }else{
+                usuario.u_activo = rol_id.r_rol === 'Empleado' ? false : true;
                 usuarioCreado = await this._usuarioServices.create(usuario);
                 if(rol_id.r_rol==='Empleado'){
                     var dateHash = new Date();
                     var dateFormated = this._usuarioServices.fcConvert(dateHash);
                     console.log(dateFormated);
                     var hasheado = await bcrypt.hash(dateFormated, saltRounds);
-                    hasheado = hasheado.replace("/","");
+                    hasheado = hasheado.split("/").join("");
                     usuarioCreado.u_hash = hasheado;
                     usuarioCreado.u_activo = false;
                     usuarioCreado = await this._usuarioServices.updateByID(usuarioCreado['_id'],usuarioCreado);
                     await this.generarPassword(
                         hasheado,usuarioCreado['_id'],
-                        usuarioCreado.u_mail,id_persona.p_nombres);
+                        usuarioCreado.u_mail,capitalize.words(id_persona.p_nombres));
                 }
                 res.send({ok:true,usuario:usuarioCreado,persona:id_persona,rol:rol_id})
             }

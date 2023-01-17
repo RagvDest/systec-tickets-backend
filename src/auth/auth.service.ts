@@ -55,9 +55,10 @@ export class AuthService {
                 .findOneParam({p_cedula:identificacion});
         const user = await this.usuarioService
                 .findOne({persona_id:persona});
-        if(user == null) status = "Usuario no existe";
+        if(user == null ) status = "Usuario no existe";
         else{
             if(user.rol_id.r_rol==="Empleado" || user.rol_id.r_rol==="Administrador") status = "Ingrese como empleado";
+            else if(!user.u_activo) status = "Usuario inactivo";
             else{
                 let pedidos = await this.pedidoService.find({usuario_id:user,ped_nro_orden:orden});
                 if(pedidos.length<1) status = 'Pedido no existe';

@@ -100,7 +100,7 @@ export class UsuarioService{
                 accessToken: myAccessToken //access token variable we defined earlier
         }});
 
-          let info = await transporter.sendMail({
+         /* let info = await transporter.sendMail({
             from: `"Ragv Developer 👻" <${from}>`, // sender address
             to: `${to}`, // list of receivers
             subject: `${asunto} ✔`, // Subject line
@@ -108,6 +108,6 @@ export class UsuarioService{
             html: html // html body
           });
 
-          console.log("Mensaje enviado: %s", info.messageId);
+          console.log("Mensaje enviado: %s", info.messageId); */
     }
 }
