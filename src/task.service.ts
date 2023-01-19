@@ -45,7 +45,7 @@ export class TasksService {
   }
 
   //@Cron('15 * * * * *') 
-  @Cron(CronExpression.EVERY_DAY_AT_11AM)
+  @Cron(CronExpression.EVERY_12_HOURS)
   async customNotifi(){
     this.logger.debug("Evento Crono");
     let pedidosActivos = await this.pedidoModel.find(

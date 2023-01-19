@@ -345,7 +345,7 @@ export class PedidoController {
         completo.p_nombres = capitalize.words(personas[i].p_nombres+" "+personas[i].p_apellidos);
         completo.p_cedula = personas[i].p_cedula;
         completo.id_usuario = usuario['_id'];
-        completo.p_tel = personas[i].p_tel;
+        completo.p_tel = personas[i].p_tel == null ? usuario.u_mail : personas[i].p_tel;
         results.push(completo);
       }
     }
