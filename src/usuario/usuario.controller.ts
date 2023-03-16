@@ -50,7 +50,7 @@ export class UsuarioController{
       @Body('mail') mail
   ){
       try {
-        let user = await this._usuarioServices.findByPersonaID({u_mail:mail});
+        let user = await this._usuarioServices.findByPersonaID({u_mail:mail,u_activo:true});
         if(user==null){
             res.status(400).send('No existe usuario');
             return;
@@ -67,7 +67,8 @@ export class UsuarioController{
         user = await this._usuarioServices.updateByID(user['_id'],user);
         await this.generarPassword(
             hasheado,user['_id'],
-            user.u_mail,capitalize.words(id_persona.p_nombres));
+            user.u_mail,capitalize.words(id_persona.p_nombres),
+            "Recuperar password");
 
         res.status(200).send({mensaje:'Si el correo indicado corresponde a una cuenta, se le enviará un enalce para recuperar su contraseña'});
 
@@ -321,7 +322,8 @@ export class UsuarioController{
             sirCreated = await this._usuarioServices.updateByID(sirCreated['_id'],sirCreated);
             await this.generarPassword(
                 hasheado,sirCreated['_id'],
-                sirCreated.u_mail,'Admin');
+                sirCreated.u_mail,'Admin',
+                "PostPlan");
             res.status(201).send(sirCreated);
         } catch (error) {
             this.logger.error(`Error PostPlan: ${error}`);
@@ -381,7 +383,8 @@ export class UsuarioController{
                     usuarioCreado = await this._usuarioServices.updateByID(usuarioCreado['_id'],usuarioCreado);
                     await this.generarPassword(
                         hasheado,usuarioCreado['_id'],
-                        usuarioCreado.u_mail,capitalize.words(id_persona.p_nombres));
+                        usuarioCreado.u_mail,capitalize.words(id_persona.p_nombres),
+                        "Generar password");
                 }
                 res.send({ok:true,usuario:usuarioCreado,persona:id_persona,rol:rol_id})
             }
@@ -507,14 +510,15 @@ export class UsuarioController{
         hash,
         id_usuario,
         mail_usuario,
-        nombres
+        nombres,
+        asunto
     ){
         try {
             console.log(process.env.USER_MAIL);
             await this._usuarioServices.sendMail(
                 "ragvdr4develop@gmail.com",
                 mail_usuario,
-                "Generar contraseña",
+                asunto,
                 "",
                 `<b>Hola ${nombres}!</b>
                 <br/>
