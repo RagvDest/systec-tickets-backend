@@ -81,6 +81,7 @@ export class UsuarioService{
         const myOAuth2Client = new OAuth2(
             process.env.CLIENT_ID,
             process.env.SECRET_ID,
+            "https://developers.google.com/oauthplayground"
             );
         
         myOAuth2Client.setCredentials({
@@ -108,6 +109,6 @@ export class UsuarioService{
             html: html // html body
           });
 
-          console.log("Mensaje enviado: %s", info.messageId);
+          console.log("Mensaje enviado: %s", info.messageId); 
     }
 }

@@ -12,7 +12,7 @@ export class Persona{
     @Prop({required:true})
     p_apellidos:string;
 
-    @Prop({required:true})
+    @Prop({required:true, unique:true})
     p_cedula:string;
 
     @Prop({})

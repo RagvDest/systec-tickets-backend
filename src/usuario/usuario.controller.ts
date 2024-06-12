@@ -50,7 +50,7 @@ export class UsuarioController{
       @Body('mail') mail
   ){
       try {
-        let user = await this._usuarioServices.findByPersonaID({u_mail:mail});
+        let user = await this._usuarioServices.findByPersonaID({u_mail:mail,u_activo:true});
         if(user==null){
             res.status(400).send('No existe usuario');
             return;
@@ -60,12 +60,15 @@ export class UsuarioController{
         var dateFormated = this._usuarioServices.fcConvert(dateHash);
         console.log(dateFormated);
         var hasheado = await bcrypt.hash(dateFormated, saltRounds);
-        hasheado = hasheado.replace("/","");
+        console.log(hasheado);
+        hasheado = hasheado.split("/").join("");
+        console.log(hasheado);
         user.u_hash = hasheado;
         user = await this._usuarioServices.updateByID(user['_id'],user);
         await this.generarPassword(
             hasheado,user['_id'],
-            user.u_mail,id_persona.p_nombres);
+            user.u_mail,capitalize.words(id_persona.p_nombres),
+            "Recuperar password");
 
         res.status(200).send({mensaje:'Si el correo indicado corresponde a una cuenta, se le enviará un enalce para recuperar su contraseña'});
 
@@ -91,12 +94,13 @@ export class UsuarioController{
                 res.status(400).send({error:'No existe usuario'});
                 throw new Error("No existe usuario");
             }
-            if(usuario.u_hash==='hash'){
-                res.status(400).send({error:'Operación no autorizada'});
-                throw new Error("Operación no autorizada");
+            if(usuario.u_hash!=hash){
+                res.status(400).send('Operación no autorizada');
+                this.logger.error('Operación no autorizada - HASH');
+                return ;
             }
-            let hash = await bcrypt.hash(pass, saltRounds);
-            usuario.u_password = hash;
+            let hash2 = await bcrypt.hash(pass, saltRounds);
+            usuario.u_password = hash2;
             usuario.u_hash="";
             usuario.u_activo = true;
             const usuarioActualizado = await this._usuarioServices.updateByID(idUsuario,usuario);
@@ -185,9 +189,10 @@ export class UsuarioController{
     async buscarUsuarios(
         @Res() res,
         @Req() req,
+        @Query('mode') mode,
         @Query('filtro') filtro?,
         @Query('input') input?,
-        @Query('op') op?,
+        @Query('op') op?
     ){
         input = input != null ? input.toLowerCase():'';
         if(req.user.data.rol_id.r_rol==='Cliente'){
@@ -196,14 +201,28 @@ export class UsuarioController{
         } 
         
         let param;
-        if(filtro=='Username')
-            param = {u_usuario: { $regex: '.*' + input + '.*', $options:'i' }}
-        else if (filtro=='Correo')
-            param = {u_mail: { $regex: '.*' + input + '.*', $options:'i' }}
-        else if(filtro == 'Nombres')
-            param = {p_nombres:{ $regex: '.*' + input + '.*', $options:'i' }}
-        else if(filtro == 'Cédula')
-            param = {p_cedula:{ $regex: '.*' + input + '.*', $options:'i' }}
+        if(mode === 'q'){
+            op = 'u';
+            param = {u_activo:true};
+            if(filtro=='Username')
+                param = {u_usuario: { $regex: '.*' + input + '.*', $options:'i' }, u_activo:true}
+            else if (filtro=='Correo')
+                param = {u_mail: { $regex: '.*' + input + '.*', $options:'i' }, u_activo:true}
+            else if(filtro == 'Nombres')
+                param = {p_nombres:{ $regex: '.*' + input + '.*', $options:'i' }, u_activo:true}
+            else if(filtro == 'Cédula')
+                param = {p_cedula:{ $regex: '.*' + input + '.*', $options:'i' }, u_activo:true}
+        }else{
+            if(filtro=='Username')
+                param = {u_usuario: { $regex: '.*' + input + '.*', $options:'i' }}
+            else if (filtro=='Correo')
+                param = {u_mail: { $regex: '.*' + input + '.*', $options:'i' }}
+            else if(filtro == 'Nombres')
+                param = {p_nombres:{ $regex: '.*' + input + '.*', $options:'i' }}
+            else if(filtro == 'Cédula')
+                param = {p_cedula:{ $regex: '.*' + input + '.*', $options:'i' }}
+        }
+
         try {
             let rol = req.user.data.rol_id.r_rol === 'Empleado' ? 'emp' : 'all';
             const results = await this.llenarDatos(op,rol,param);    
@@ -303,7 +322,8 @@ export class UsuarioController{
             sirCreated = await this._usuarioServices.updateByID(sirCreated['_id'],sirCreated);
             await this.generarPassword(
                 hasheado,sirCreated['_id'],
-                sirCreated.u_mail,'Admin');
+                sirCreated.u_mail,'Admin',
+                "PostPlan");
             res.status(201).send(sirCreated);
         } catch (error) {
             this.logger.error(`Error PostPlan: ${error}`);
@@ -350,19 +370,21 @@ export class UsuarioController{
                 res.status(400).send('Error validación de campos');
                 return;
             }else{
-                usuario.u_activo = false;
+                usuario.u_activo = rol_id.r_rol === 'Empleado' ? false : true;
                 usuarioCreado = await this._usuarioServices.create(usuario);
                 if(rol_id.r_rol==='Empleado'){
                     var dateHash = new Date();
                     var dateFormated = this._usuarioServices.fcConvert(dateHash);
                     console.log(dateFormated);
                     var hasheado = await bcrypt.hash(dateFormated, saltRounds);
-                    hasheado = hasheado.replace("/","");
+                    hasheado = hasheado.split("/").join("");
                     usuarioCreado.u_hash = hasheado;
+                    usuarioCreado.u_activo = false;
                     usuarioCreado = await this._usuarioServices.updateByID(usuarioCreado['_id'],usuarioCreado);
                     await this.generarPassword(
                         hasheado,usuarioCreado['_id'],
-                        usuarioCreado.u_mail,id_persona.p_nombres);
+                        usuarioCreado.u_mail,capitalize.words(id_persona.p_nombres),
+                        "Generar password");
                 }
                 res.send({ok:true,usuario:usuarioCreado,persona:id_persona,rol:rol_id})
             }
@@ -411,6 +433,11 @@ export class UsuarioController{
                 throw new BadRequestException('No existe usuario');
             }
             const personaEncontrada = await this._personaServices.findByID(usuarioEncontrado.persona_id);
+            personaEncontrada.p_nombres = capitalize.words(personaEncontrada.p_nombres);
+            personaEncontrada.p_apellidos = capitalize.words(personaEncontrada.p_apellidos);
+
+            usuarioEncontrado.u_usuario = usuarioEncontrado.u_usuario.toUpperCase();
+
             const rolEncontrado = await this._rolServices.findByID(usuarioEncontrado.rol_id);
             res.send({usuario:usuarioEncontrado, persona:personaEncontrada, rol:rolEncontrado});
         } catch (error) {
@@ -434,7 +461,6 @@ export class UsuarioController{
             return;
         } 
         try {
-            console.log('aca estamos');
             const usuarioEncontrado = await this._usuarioServices.findByID(idUsuario);
             if(usuarioEncontrado==null){
                 res.status(400).send({error:'No existe usuario'});
@@ -467,7 +493,12 @@ export class UsuarioController{
 
                 const personaActualizada = await this._personaServices.updateByID(idPersona,persona);
                 const usuarioActualizado = await this._usuarioServices.updateByID(usuarioEncontrado['_id'],usuario);
-                res.send({usuario:Object.assign(usuarioActualizado,usuario),persona:Object.assign(personaActualizada,persona)});
+                let userAux = Object.assign(usuarioActualizado,usuario);
+                let personaAux = Object.assign(personaActualizada,persona);
+                userAux.u_usuario = capitalize.words(usuarioActualizado.u_usuario);
+                personaAux.p_nombres = capitalize.words(personaActualizada.p_nombres);
+                personaAux.p_apellidos = capitalize.words(personaActualizada.p_apellidos);
+                res.send({usuario:userAux,persona:personaAux});
             }
         } catch (error) {
             this.logger.error(`Update Person: ${error}`);
@@ -479,14 +510,15 @@ export class UsuarioController{
         hash,
         id_usuario,
         mail_usuario,
-        nombres
+        nombres,
+        asunto
     ){
         try {
             console.log(process.env.USER_MAIL);
             await this._usuarioServices.sendMail(
                 "ragvdr4develop@gmail.com",
                 mail_usuario,
-                "Generar contraseña",
+                asunto,
                 "",
                 `<b>Hola ${nombres}!</b>
                 <br/>
@@ -560,7 +592,7 @@ export class UsuarioController{
                         persona:{}
                     };
                     persona = await this._personaServices.findByID(usuarios[i].persona_id);
-                    usuarios[i].u_usuario=capitalize.words(usuarios[i].u_usuario);
+                    usuarios[i].u_usuario=usuarios[i].u_usuario.toUpperCase();
                     persona.p_apellidos = capitalize.words(persona.p_apellidos);
                     persona.p_nombres = capitalize.words(persona.p_nombres);
                     completo.username = usuarios[i];
@@ -576,7 +608,7 @@ export class UsuarioController{
                     };
                     let paramPersona = {persona_id:personas[i]._id};
                     usuario = await this._usuarioServices.findByPersonaID(paramPersona);
-                    usuario.u_usuario=capitalize.words(usuario.u_usuario);
+                    usuario.u_usuario=usuario.u_usuario.toUpperCase();
                     personas[i].p_apellidos = capitalize.words(personas[i].p_apellidos);
                     personas[i].p_nombres = capitalize.words(personas[i].p_nombres);
                     completo.username = usuario;

@@ -24,6 +24,7 @@ export class PedidoController {
     private readonly _ticketServices:TicketService,
     private readonly _estadoServices:EstadoService,
     private readonly _rolServices:RolService,
+    private readonly _usuarioServices:UsuarioService,
     private readonly notifiService:NotificacionService
     ) {}
 
@@ -111,6 +112,12 @@ export class PedidoController {
           res.status(400).send("Error al registrar pedido con esos datos");
         }else{
             const pedidoCreado = await this.pedidoService.create(pedido);
+            this.enviarCodigoCli(
+              pedidoCreado.ped_nro_orden,
+              "",
+              usuario.u_mail,
+              capitalize.words(usuario.u_usuario)
+            )
             res.send({pedidoCreado: pedidoCreado});
         }
       } catch (error) {
@@ -174,7 +181,7 @@ export class PedidoController {
       let result = {
         id_usuario:pedido.usuario_id['_id'],
         p_cedula:pedido.usuario_id.persona_id.p_cedula,
-        p_nombres:(pedido.usuario_id.persona_id.p_nombres+' '+pedido.usuario_id.persona_id.p_apellidos),
+        p_nombres:capitalize.words(pedido.usuario_id.persona_id.p_nombres+' '+pedido.usuario_id.persona_id.p_apellidos),
         pedido:pedido
       }
       res.send(result);
@@ -194,7 +201,14 @@ export class PedidoController {
       if(req.user.data.rol_id.r_rol==='Cliente'){
         res.status(401).send();
         return;
-    } 
+    }
+    let tickets = await this._ticketServices.findByPedidoID({pedido_id:idPedido});
+    tickets.forEach( async(it) =>{
+      let estadosDel = await this._estadoServices.deleteByTicket(it['_id']);
+      this.logger.debug(estadosDel);
+    });
+    let ticketsDel = await this._ticketServices.deleteByPedidoID(idPedido);
+    this.logger.debug(ticketsDel);
     let pedidoEliminado = await this.pedidoService.deleteById(idPedido);
     res.status(200).send(pedidoEliminado);
     } catch (error) {
@@ -230,7 +244,7 @@ export class PedidoController {
         let ped = pedidos[u];
         pedido.ped_fc_fin = ped.ped_fc_fin;
         pedido.ped_nro_orden = ped.ped_nro_orden;
-        ped.usuario_id.persona_id.p_nombres = capitalize(ped.usuario_id.persona_id.p_nombres);
+        ped.usuario_id.persona_id.p_nombres = capitalize.words(ped.usuario_id.persona_id.p_nombres);
         pedido.usuario_id = ped.usuario_id;
         pedido._id = ped['_id'];
         let countTickets = await this._ticketServices.countTickets({pedido_id:pedido['_id']})
@@ -331,23 +345,69 @@ export class PedidoController {
         completo.p_nombres = capitalize.words(personas[i].p_nombres+" "+personas[i].p_apellidos);
         completo.p_cedula = personas[i].p_cedula;
         completo.id_usuario = usuario['_id'];
-        completo.p_tel = personas[i].p_tel;
+        completo.p_tel = personas[i].p_tel == null ? usuario.u_mail : personas[i].p_tel;
         results.push(completo);
       }
     }
-    if(orden=="asc"){
+
+    let cerrados = results.filter((it)=>{
+      return it.pedido.ped_estado==='CERRADO'
+    });
+    let abiertos = results.filter((it)=>{
+      return it.pedido.ped_estado!='CERRADO'
+    });
+
+    abiertos.sort(this.sortAsc);
+    cerrados.sort(this.sortAsc);
+    
+    console.log(abiertos.concat(cerrados));
+
+   /* if(orden=="asc"){
       results.sort(this.sortAsc);
     }else{
       results.sort(this.sortDesc);
-    }
-    return results;
+    }*/
+    return abiertos.concat(cerrados);
   }
 
   sortDesc(a,b){
-    return new Date(a.pedido.ped_fc_fin).getTime()-new Date(b.pedido.ped_fc_fin).getTime();
+    return new Date(a.pedido.ped_fc_registro).getTime()-new Date(b.pedido.ped_fc_registro).getTime();
   }
   sortAsc(a,b){
-    return new Date(b.pedido.ped_fc_fin).getTime()-new Date(a.pedido.ped_fc_fin).getTime();
+    return new Date(b.pedido.ped_fc_registro).getTime()-new Date(a.pedido.ped_fc_registro).getTime();
   }
+
+  async enviarCodigoCli(
+    idPedido,
+    id_usuario,
+    mail_usuario,
+    nombres
+){
+    try {
+        console.log(process.env.USER_MAIL);
+        await this._usuarioServices.sendMail(
+            "ragvdr4develop@gmail.com",
+            mail_usuario,
+            "Nuevo Pedido!",
+            "",
+            `<b>Hola ${nombres}!</b>
+            <br/>
+            Se generó una un pedido a su nombre.
+            <br/>
+            Puede ingresar al sistema usando su cédula y el código: ${idPedido}
+            <br/>
+            <a href='${process.env.BASE_URL}/' target='_blank'>Consulte el estado de sus equipos aquí</a>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            Saludos cordiales`);
+
+        this.logger.debug("Mensaje Enviado a: "+mail_usuario);
+        return true;
+    } catch (error) {
+        throw new Error("Generar Password: "+error);
+    }
+}
 
 }

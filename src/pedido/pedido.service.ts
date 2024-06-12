@@ -3,12 +3,16 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Pedido } from './pedido.entity';
 import { Usuario } from 'src/usuario/usuario.entity';
+import { Ticket } from 'src/ticket/ticket.entity';
+import { Estado } from 'src/estado/estado.entity';
+import { throws } from 'assert';
 
 @Injectable()
 export class PedidoService{
     constructor(
         @InjectModel(Pedido.name) private pedidoModel:Model<Pedido>,
-        @InjectModel(Usuario.name) private usuarioModel:Model<Usuario>){}
+        @InjectModel(Usuario.name) private usuarioModel:Model<Usuario>
+        ){}
 
     async find(param?,orden?,pathPop?):Promise<Pedido[]>{
         return this.pedidoModel.find(param).populate(pathPop).sort(orden).exec();

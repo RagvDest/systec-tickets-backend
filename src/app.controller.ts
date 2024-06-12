@@ -5,6 +5,9 @@ import { PersonaService } from './persona/persona.service';
 import { TicketService } from './ticket/ticket.service';
 import { UsuarioService } from './usuario/usuario.service';
 
+var capitalize = require('capitalize')
+
+
 @Controller()
 export class AppController {
   constructor(
@@ -35,15 +38,19 @@ export class AppController {
     //Conseguir mes 
       let fecha = new Date();
       let mes = fecha.getMonth()+1;
+      let year = fecha.getFullYear();
 
       // Get rango del mes actual
       let [fcMin, fcMax] = this.userService.getMinMaxDateRange(fecha);
 
       console.log(mes);
+      console.log(year);
       let pedidosMes = await this.pedidoService.findByDate(
         [
           {$addFields: {  "month" : {$month: '$ped_fc_registro'}}},
-          {$match: { month: mes}}
+          {$addFields: {  "year" : {$year: '$ped_fc_registro'}}},
+          {$match: { month: mes}},
+          {$match: { year: year}}
         ]
       );
 
@@ -69,7 +76,7 @@ export class AppController {
         return {
           id:it['_id'],
           usuario:{
-            nombres:`${persona.p_nombres}`,
+            nombres:`${capitalize.words(persona.p_nombres)}`,
             id:it.usuario_id['_id']
           }
       }
@@ -104,7 +111,8 @@ export class AppController {
 
       // Ventas por Mes
       let totalVentasArray = ticketsMes.map((it)=>{
-          return it.t_abono;
+        let resultado = it.t_total - it.t_abono;
+        return resultado;
       });
       const reducer = (a,b) =>{
         return a+b;

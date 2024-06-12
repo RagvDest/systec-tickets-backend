@@ -44,26 +44,33 @@ export class TasksService {
     };
   }
 
-  @Cron(CronExpression.EVERY_DAY_AT_11AM)
+  //@Cron('15 * * * * *') 
+  @Cron(CronExpression.EVERY_12_HOURS)
   async customNotifi(){
+    this.logger.debug("Evento Crono");
     let pedidosActivos = await this.pedidoModel.find(
       {
         ped_estado:{$not:/CERRADO/},
-        ped_fc_fin:{$ne:null},
         ped_fc_noti:{$ne:null}
       });
+      console.log(pedidosActivos.length);
       let date = new Date();
       let pedRecordatorio = pedidosActivos.filter((it)=>{
-        
+        console.log(it.ped_fc_noti);
         let diaAntes = new Date(it.ped_fc_noti);
         diaAntes.setDate(diaAntes.getDate()-1);
-        let diff = (date.getTime() - diaAntes.getTime())*(1000*60*60*24);
+        this.logger.debug(diaAntes.getTime());
+        this.logger.debug(date.getTime());
+        let diff = (date.getTime() - diaAntes.getTime())/(1000*60*60*24);
+        console.log(diff);
         diff = this.appService.round10('round',diff,0);
+        console.log(diff);
 
         if(diff<=1)
             return true;
         else return false;
     });
+    console.log(pedRecordatorio);
     let notificacion;
     for(let i=0;i<pedRecordatorio.length;i++){
         let pedSelect = pedRecordatorio[i];
