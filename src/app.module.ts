@@ -31,13 +31,16 @@ import { Notificacion, NotificacionSchema } from './notificacion/notificacion.en
 let {MONGO_URI, MONGO_URI_TEST, NODE_ENV} = process.env;
 
 let mongo_uri = NODE_ENV === 'test' ? MONGO_URI_TEST : MONGO_URI;
+let mongo_db = NODE_ENV === 'test' ? 'test' : 'systec';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal:true
     }),
-    MongooseModule.forRoot(mongo_uri),
+    MongooseModule.forRoot(mongo_uri,{
+      dbName:mongo_db
+    }),
     EstadoModule,
     RolModule,
     PersonaModule,

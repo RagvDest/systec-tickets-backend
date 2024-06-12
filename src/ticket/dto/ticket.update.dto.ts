@@ -1,4 +1,3 @@
-import { IsPositiveInt } from "@nestjsi/class-validator";
 import { IsNumber, IsNotEmpty, IsString, IsEmpty, IsEmail} from "class-validator";
 import { Ticket } from "../ticket.entity";
 
