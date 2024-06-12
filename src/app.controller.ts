@@ -35,15 +35,19 @@ export class AppController {
     //Conseguir mes 
       let fecha = new Date();
       let mes = fecha.getMonth()+1;
+      let year = fecha.getFullYear();
 
       // Get rango del mes actual
       let [fcMin, fcMax] = this.userService.getMinMaxDateRange(fecha);
 
       console.log(mes);
+      console.log(year);
       let pedidosMes = await this.pedidoService.findByDate(
         [
           {$addFields: {  "month" : {$month: '$ped_fc_registro'}}},
-          {$match: { month: mes}}
+          {$addFields: {  "year" : {$year: '$ped_fc_registro'}}},
+          {$match: { month: mes}},
+          {$match: { year: year}}
         ]
       );
 

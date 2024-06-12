@@ -81,6 +81,7 @@ export class UsuarioService{
         const myOAuth2Client = new OAuth2(
             process.env.CLIENT_ID,
             process.env.SECRET_ID,
+            "https://developers.google.com/oauthplayground"
             );
         
         myOAuth2Client.setCredentials({
