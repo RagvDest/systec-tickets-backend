@@ -111,7 +111,7 @@ export class AppController {
 
       // Ventas por Mes
       let totalVentasArray = ticketsMes.map((it)=>{
-        let resultado = it.t_total - it.t_abono;
+        let resultado = it.t_total;
         return resultado;
       });
       const reducer = (a,b) =>{
