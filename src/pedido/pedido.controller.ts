@@ -392,7 +392,7 @@ export class PedidoController {
             "",
             `<b>Hola ${nombres}!</b>
             <br/>
-            Se generó una un pedido a su nombre.
+            Se generó un pedido a su nombre.
             <br/>
             Puede ingresar al sistema usando su cédula y el código: ${idPedido}
             <br/>
